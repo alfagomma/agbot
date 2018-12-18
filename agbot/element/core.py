@@ -19,7 +19,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler('logs/element%s.log' % (time.strftime("%Y%m%d")))
-c_handler.setLevel(logging.INFO)
+c_handler.setLevel(logging.DEBUG)
 f_handler.setLevel(logging.WARNING)
 # Create formatters and add it to handlers
 c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
@@ -42,7 +42,6 @@ class Element(object):
         session = Session()
         self.apibot = session.apibot
         self.ep_element = session.ep_element
-        logger.info('Ciao sono Element')
 
 
     def createFamily(self, family_code):

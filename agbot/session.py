@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 c_handler = logging.StreamHandler()
 f_handler = logging.FileHandler('logs/session%s.log' % (time.strftime("%Y%m%d")))
-c_handler.setLevel(logging.INFO)
+c_handler.setLevel(logging.DEBUG)
 f_handler.setLevel(logging.WARNING)
 # Create formatters and add it to handlers
 c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
@@ -42,7 +42,7 @@ class Session(object):
         """
         Initialize main class with this and that.
         """
-        logger.info('Ciao inizializzo session ....')
+        logger.debug('Ciao inizializzo session ....')
         config_path = os.path.expanduser('~/.agcloud/config')
         credentials_path = os.path.expanduser('~/.agcloud/credentials')
         config = configparser.ConfigParser()
@@ -60,17 +60,18 @@ class Session(object):
                 exit(1)            
         else:
             profile_name = 'default'
-
+        logger.debug('profile_name is %s' % profile_name)
         self.agcloud_id = credentials.get(profile_name, 'agcloud_id')
         self.agcloud_key = credentials.get(profile_name, 'agcloud_key')
         self.ep_auth = config.get(profile_name, 'ep_auth')
+        logger.debug('ep_auth is %s' % self.ep_auth)
         self.ep_h2o = config.get(profile_name, 'ep_h2o')
+        logger.debug('ep_h2o is %s' % self.ep_h2o)
         self.ep_element = config.get(profile_name, 'ep_element')
+        logger.debug('ep_element is %s' % self.ep_element)
         self.redis_host = config.get(profile_name, 'redis_host') if config.has_option(profile_name, 'redis_host') else '127.0.0.1'
         self.redis_pass = config.get(profile_name, 'redis_pass') if config.has_option(profile_name, 'redis_pass') else None
-
         self.cache = redis.Redis(host=self.redis_host, password=self.redis_pass, decode_responses=True)
-
         self.apibot = requests.Session()
         self.sessione()
  
