@@ -1,0 +1,143 @@
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+Session
+"""
+
+__author__ = "Davide Pellegrino"
+__version__ = "1.1.3"
+__date__ = "2018-10-19"
+
+import os
+import requests
+import json
+import time
+import logging
+import redis
+import configparser
+from sys import exit
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+c_handler = logging.StreamHandler()
+f_handler = logging.FileHandler('logs/session%s.log' % (time.strftime("%Y%m%d")))
+c_handler.setLevel(logging.INFO)
+f_handler.setLevel(logging.WARNING)
+# Create formatters and add it to handlers
+c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
+f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_handler.setFormatter(c_format)
+f_handler.setFormatter(f_format)
+logger.addHandler(c_handler)
+logger.addHandler(f_handler)
+
+class Session(object):
+    """
+    Element core class .
+    """
+
+    def __init__(self, profile_name=None):
+        """
+        Initialize main class with this and that.
+        """
+        logger.info('Ciao inizializzo session ....')
+        config_path = os.path.expanduser('~/.agcloud/config')
+        credentials_path = os.path.expanduser('~/.agcloud/credentials')
+        config = configparser.ConfigParser()
+        config.read(config_path)
+        credentials = configparser.ConfigParser()
+        credentials.read(credentials_path)
+ 
+        if profile_name is not None:
+            print('Reading profile %s' % profile_name)
+            if not config.has_section(profile_name):
+                logger.error('Questo profilo configurazioni non esiste')
+                exit(1)
+            if not credentials.has_section(profile_name):
+                logger.error('Questo profilo credenziali non esiste')
+                exit(1)            
+        else:
+            profile_name = 'default'
+
+        self.agcloud_id = credentials.get(profile_name, 'agcloud_id')
+        self.agcloud_key = credentials.get(profile_name, 'agcloud_key')
+        self.ep_auth = config.get(profile_name, 'ep_auth')
+        self.ep_h2o = config.get(profile_name, 'ep_h2o')
+        self.ep_element = config.get(profile_name, 'ep_element')
+        self.redis_host = config.get(profile_name, 'redis_host') if config.has_option(profile_name, 'redis_host') else '127.0.0.1'
+        self.redis_pass = config.get(profile_name, 'redis_pass') if config.has_option(profile_name, 'redis_pass') else None
+
+        self.cache = redis.Redis(host=self.redis_host, password=self.redis_pass, decode_responses=True)
+
+        self.apibot = requests.Session()
+        self.sessione()
+ 
+    def sessione(self):
+        """prende sessione"""
+        logger.debug('Init sessione')
+        token = self.getToken()
+        self.apibot.headers.update({
+            'user-agent': 'AGBot-Session/%s'%__version__,
+            'x-uid': token['uid'],
+            'x-sid': token['sid'],
+            'x-csrf': token['csrf']            
+            })        
+
+    def getToken(self):
+        """ Prende token di sessione utente """
+        logger.debug('Init getToken')
+        token_name = 'ag:agbot'
+        token = self.cache.hgetall(token_name)
+        if not bool(token):
+            logger.info('Creo nuova sessione')
+            token = self.createToken(token_name)
+        return token
+
+    def createToken(self, token_name):
+        """ Crea token di sessione """
+        logger.debug(f'Creo un nuovo session token {token_name}')
+        rqSid = '%s/session' % self.ep_auth
+        rqCsrf = '%s/session/csrf' % self.ep_auth
+        rqUid = '%s/auth/token' % self.ep_auth
+        rUid = self.apibot.post(rqUid, auth=(self.agcloud_id, self.agcloud_key))
+        if 200 != rUid.status_code:
+            parseApiError(rUid)
+            return False
+        responseUid = json.loads(rUid.text)
+        expirein = int(time.time()) + responseUid['expires_in']
+
+        uid = responseUid['access_token']
+        rSid = self.apibot.get(rqSid)
+        if 200 != rSid.status_code:
+            parseApiError(rSid)
+            return False  
+        responseSid = json.loads(rSid.text) 
+        sid = responseSid['token']
+        rCsrf = self.apibot.get(rqCsrf)
+        if 200 != rCsrf.status_code:
+                parseApiError(rCsrf)
+                return False
+        responseCsrf = json.loads(rCsrf.text)
+        csrf = responseCsrf['csrfToken']
+        agbotsession = {
+            'uid' : uid,
+            'sid' : sid,
+            'csrf' : csrf
+        }
+        self.cache.hmset(token_name, agbotsession)
+        self.cache.expireat(token_name, expirein)
+        return agbotsession
+
+
+def parseApiError(response):
+        """ stampa errori api """
+        status = response.status_code
+        try:
+            problem = json.loads(response.text)
+        except Exception:
+            # Add handlers to the logger
+            logger.warning('Not jsonable')
+            problem = response.text
+        logger.error('STATUS:%s | PROBLEM: %s ' % (status, problem))
