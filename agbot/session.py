@@ -6,10 +6,6 @@
 Session
 """
 
-__author__ = "Davide Pellegrino"
-__version__ = "1.1.3"
-__date__ = "2018-10-19"
-
 import os
 import requests
 import json
@@ -22,16 +18,11 @@ from sys import exit
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 c_handler = logging.StreamHandler()
-f_handler = logging.FileHandler('logs/session%s.log' % (time.strftime("%Y%m%d")))
 c_handler.setLevel(logging.DEBUG)
-f_handler.setLevel(logging.WARNING)
 # Create formatters and add it to handlers
-c_format = logging.Formatter('%(name)s - %(levelname)s - %(message)s')
-f_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 c_handler.setFormatter(c_format)
-f_handler.setFormatter(f_format)
 logger.addHandler(c_handler)
-logger.addHandler(f_handler)
 
 class Session(object):
     """
@@ -80,7 +71,7 @@ class Session(object):
         logger.debug('Init sessione')
         token = self.getToken()
         self.apibot.headers.update({
-            'user-agent': 'AGBot-Session/%s'%__version__,
+            'user-agent': 'AGBot-Session',
             'x-uid': token['uid'],
             'x-sid': token['sid'],
             'x-csrf': token['csrf']            
