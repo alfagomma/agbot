@@ -149,3 +149,139 @@ class Element(object):
             parseApiError(r)
             return False 
         logger.info('Sync material %s norms %s' % (material_id, payload))              
+
+
+    def getFamilies(self, query=None):
+        """ Prende tutte le famiglie """
+        rq = '%s/family' % (self.ep_element)
+        r = self.apibot.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        _families = json.loads(r.text)
+        return _families
+
+
+    def getFeature(self, feature_name):
+        """ Prende famiglia da nome """
+        rq = '%s/feature/findByName?name=%s' % (EP_ELEMENT, feature_name)
+        r = self.apibot.get(rq)
+        if 200 != r.status_code:
+            return False
+        return json.loads(r.text)
+
+
+    def getDivision(self, division_name):
+        """ Prende divisione da nome """
+        rq = '%s/division/findByName?name=%s' % (EP_ELEMENT, division_name)
+        r = self.apibot.get(rq)
+        if 200 != r.status_code:
+            return False
+        return json.loads(r.text)
+
+
+    def getProduct(self, product_name):
+        """ Prende prodotto da nome """
+        rq = '%s/product/findByName?name=%s' % (EP_ELEMENT, product_name)
+        r = self.apibot.get(rq)
+        if 200 != r.status_code:
+            return False
+        return json.loads(r.text)
+
+
+    def createFeature(self, featureName):
+        """ crea una feature """
+        rq = '%s/feature' % (EP_ELEMENT)
+        payload = {'name':featureName}
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+
+    def createDivision(self, division_name):
+        """ crea una divisione """
+        rq = '%s/division' % (EP_ELEMENT)
+        payload = {'name':division_name}
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+
+    def createProduct(self, division_id, product_name):
+        """ crea un prodotto """
+        rq = '%s/product' % (EP_ELEMENT)
+        payload = {
+            'division_id': division_id,
+            'name':product_name
+            }
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+    def patchFamilyProduct(self, family_id, product_id):
+        """
+        Sincronizza il prodotto con la famiglia
+        """
+        rq = '%s/family/%s' % (EP_ELEMENT, family_id)
+        payload = {
+            'product_id': product_id
+            }
+        try:
+            r = self.apibot.patch(rq, json=payload)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            print(e)
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+    def updateFamilyCover(family_id, localFile):
+        """
+        Aggiorna cover famiglia.
+        """
+        print('Update family %s cover with file %s' % (family_id, localFile))
+        rq = '%s/family/%s/cover' % (EP_ELEMENT, family_id)
+        fin = open(localFile, 'rb')
+        files = {'src': fin}
+        #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
+        try:
+            r = self.apibot.post(rq, files=files)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            print(e)
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+    def updateProductCover(product_id, localFile):
+        """
+        Aggiorna cover prodotto.
+        """
+        print('Update product %s cover with file %s' % (product_id, localFile))
+        rq = '%s/product/%s/cover' % (EP_ELEMENT, product_id)
+        fin = open(localFile, 'rb')
+        files = {'src': fin}
+        try:
+            r = self.apibot.post(rq, files=files)
+        except requests.exceptions.RequestException as e:  # This is the correct syntax
+            print(e)
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)        
+            """ sync material norm """
+            logger.debug('Sync material %s norm %s' % (material_id, payload))
+            rq = '%s/material/%s/norm' % (self.ep_element, material_id)
+            r = self.apibot.post(rq, json=payload)
+            if 204 != r.status_code:
+                parseApiError(r)
+                return False 
+            logger.info('Sync material %s norms %s' % (material_id, payload))              

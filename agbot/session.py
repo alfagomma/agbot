@@ -56,6 +56,8 @@ class Session(object):
         self.agcloud_key = credentials.get(profile_name, 'agcloud_key')
         self.ep_auth = config.get(profile_name, 'ep_auth')
         logger.debug('ep_auth is %s' % self.ep_auth)
+        self.ep_agcloud = config.get(profile_name, 'ep_agcloud')
+        logger.debug('ep_agcloud is %s' % self.ep_agcloud)        
         self.ep_h2o = config.get(profile_name, 'ep_h2o')
         logger.debug('ep_h2o is %s' % self.ep_h2o)
         self.ep_element = config.get(profile_name, 'ep_element')
