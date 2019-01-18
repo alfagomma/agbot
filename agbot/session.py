@@ -62,6 +62,10 @@ class Session(object):
         logger.debug('ep_h2o is %s' % self.ep_h2o)
         self.ep_element = config.get(profile_name, 'ep_element')
         logger.debug('ep_element is %s' % self.ep_element)
+        self.ep_sqm = config.get(profile_name, 'ep_sqm')
+        logger.debug('ep_sqm is %s' % self.ep_sqm)   
+        self.ep_eb2 = config.get(profile_name, 'ep_eb2')
+        logger.debug('ep_eb2 is %s' % self.ep_eb2)                
         self.redis_host = config.get(profile_name, 'redis_host') if config.has_option(profile_name, 'redis_host') else '127.0.0.1'
         self.redis_pass = config.get(profile_name, 'redis_pass') if config.has_option(profile_name, 'redis_pass') else None
         self.cache = redis.Redis(host=self.redis_host, password=self.redis_pass, decode_responses=True)

@@ -7,8 +7,8 @@ Element SDK
 """
 
 __author__ = "Davide Pellegrino"
-__version__ = "1.1.3"
-__date__ = "2018-10-19"
+__version__ = "1.2.0"
+__date__ = "2019-01-17"
 
 import json
 import logging
@@ -30,7 +30,7 @@ class Element(object):
     """
     Element core class .
     """
-
+    
     def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
@@ -69,12 +69,12 @@ class Element(object):
         return json.loads(r.text)  
 
 
-    def createMaterial(self, payload):
+    def createItem(self, payload):
         """
-        Create new material.
+        Create new item.
         """
-        logger.debug('Creating material %s' % payload)
-        rq = '%s/material' % (self.ep_element)
+        logger.debug('Creating item %s' % payload)
+        rq = '%s/item' % (self.ep_element)
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -82,12 +82,12 @@ class Element(object):
         return json.loads(r.text)
 
 
-    def getMaterialFromErpId(self, erp_id:int, ext_id:str):
+    def getItemFromErpId(self, erp_id:int, ext_id:str):
         """
-        Get material from ext_id of Erp.
+        Get item from ext_id of Erp.
         """
-        logger.debug(f'Search material ext_id {ext_id} for erp {erp_id}.')
-        rq = '%s/material/findByErpId' % (self.ep_element)
+        logger.debug(f'Search item ext_id {ext_id} for erp {erp_id}.')
+        rq = '%s/item/findByErpId' % (self.ep_element)
         payload = {
             'erp_id' : erp_id,
             'ext_id' : ext_id
@@ -99,12 +99,12 @@ class Element(object):
         return json.loads(r.text) 
     
 
-    def getMaterialFromErpCode(self, erp_id:int, ext_code:str):
+    def getItemFromErpCode(self, erp_id:int, ext_code:str):
         """
-        Get material from ext_code of Erp.
+        Get item from ext_code of Erp.
         """
-        logger.debug(f'Search material ext_code {ext_code} for erp {erp_id}')
-        rq = '%s/material/findByErpCode' % (self.ep_element)
+        logger.debug(f'Search item ext_code {ext_code} for erp {erp_id}')
+        rq = '%s/item/findByErpCode' % (self.ep_element)
         payload = {
             'erp_id' : erp_id,
             'ext_code' : ext_code
@@ -116,12 +116,12 @@ class Element(object):
         return json.loads(r.text) 
 
     
-    def updateMaterial(self, material_id:int, payload):
+    def updateItem(self, item_id:int, payload):
         """
-        Update material.
+        Update item.
         """
-        logger.debug(f'Updating material {material_id}')
-        rq = '%s/material/%s' % (self.ep_element, material_id)
+        logger.debug(f'Updating item {item_id}')
+        rq = '%s/item/%s' % (self.ep_element, item_id)
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -129,17 +129,17 @@ class Element(object):
         return json.loads(r.text)
 
 
-    def syncMaterialNorm(self, material_id:int, payload):
+    def syncItemNorm(self, item_id:int, payload):
         """
-        Sync material norm.
+        Sync item norm.
         """
-        logger.debug('Sync material %s norm %s' % (material_id, payload))
-        rq = '%s/material/%s/norm' % (self.ep_element, material_id)
+        logger.debug('Sync item %s norm %s' % (item_id, payload))
+        rq = '%s/item/%s/norm' % (self.ep_element, item_id)
         r = self.apibot.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False 
-        logger.info('Sync material %s norms %s' % (material_id, payload))              
+        logger.info('Sync item %s norms %s' % (item_id, payload))              
         return True
 
 
@@ -211,14 +211,34 @@ class Element(object):
         return json.loads(r.text)    
 
 
-    def patchFamilyProduct(self, family_id:int, product_id:int):
+    def patchFamilyCategory(self, family_id:int, category_id:int):
         """
-        Sincronizza il prodotto con la famiglia
+        Associa categoria a famiglia
         """
-        logger.debug(f'Pathing family {family_id} with product {product_id}')
+        logger.debug(f'Pathing family {family_id} with category {category_id}')
         rq = '%s/family/%s' % (self.ep_element, family_id)
         payload = {
-            'product_id': product_id
+            'category_id': category_id
+            }
+        try:
+            r = self.apibot.patch(rq, json=payload)
+        except Exception:
+            logging.exception("Exception occurred")
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+
+    def patchFamilyDatasheet(self, family_id:int, datasheet_id:int):
+        """
+        Associa datasheet a famiglia
+        """
+        logger.debug(f'Pathing family {family_id} with datasheet {datasheet_id}')
+        rq = '%s/family/%s' % (self.ep_element, family_id)
+        payload = {
+            'datasheet_id': datasheet_id
             }
         try:
             r = self.apibot.patch(rq, json=payload)
@@ -254,7 +274,8 @@ class Element(object):
 
     def attachFamilyNorm(self, family_id:int, norm_id:int):
         """
-        Aggiunge una norma riconosciuta, alla famiglia
+        Aggiunge una norma riconosciuta, alla famiglia.
+        SUGGEST - USE syncFamilyNorm!
         """
         logger.debug('Attach norm %s at family %s' % (norm_id, family_id))
         rq = '%s/family/%s/norm' % (self.ep_element, family_id)
@@ -271,6 +292,7 @@ class Element(object):
     def attachFamilyQuality(self, family_id:int, quality_id:int):
         """
         Aggiunge una qualità alla famiglia
+        SUGGEST - USE syncFamilyNorm!
         """
         logger.debug('Attach quality %s at family %s' % (quality_id, family_id))
         rq = '%s/family/%s/quality' % (self.ep_element, family_id)
@@ -368,44 +390,44 @@ class Element(object):
         return _division
 
 
-    def createProduct(self, division_id:int, product_name:str):
+    def createCategory(self, division_id:int, category_name:str):
         """
-        Crea un prodotto.
+        Crea un categoria.
         """
-        logger.debug('Creating new product with name %s at division %s' % (product_name, division_id))
-        rq = '%s/product' % (self.ep_element)
+        logger.debug('Creating new category with name %s at division %s' % (category_name, division_id))
+        rq = '%s/category' % (self.ep_element)
         payload = {
             'division_id': division_id,
-            'name':product_name
+            'name':category_name
             }
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
-        _product = json.loads(r.text)
-        return _product
+        _category = json.loads(r.text)
+        return _category
 
 
-    def getProductByName(self, product_name:str):
+    def getCategoryByName(self, category_name:str):
         """
-        Prende prodotto da nome.
+        Prende categoria da nome.
         """
-        logger.debug('Search product by name %s' % product_name)
-        rq = '%s/product/findByName?name=%s' % (self.ep_element, product_name)
+        logger.debug('Search category by name %s' % category_name)
+        rq = '%s/category/findByName?name=%s' % (self.ep_element, category_name)
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        _product = json.loads(r.text)
-        return _product
+        _category = json.loads(r.text)
+        return _category
 
 
-    def updateProductCover(self, product_id:int, localFile):
+    def updateCategoryCover(self, category_id:int, localFile):
         """
-        Aggiorna cover prodotto.
+        Aggiorna cover categoria.
         """
-        logger.debug('Update product %s cover with file %s' % (product_id, localFile))
-        rq = '%s/product/%s/cover' % (self.ep_element, product_id)
+        logger.debug('Update category %s cover with file %s' % (category_id, localFile))
+        rq = '%s/category/%s/cover' % (self.ep_element, category_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
         try:
@@ -416,5 +438,46 @@ class Element(object):
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        _product = json.loads(r.text)        
-        return _product
+        _category = json.loads(r.text)        
+        return _category
+
+
+    def createDatasheet(self, payload):
+        """
+        Create new datasheet.
+        """
+        logger.debug('Creating datasheet %s' % payload)
+        rq = '%s/datasheet' % (self.ep_element)
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
+
+    def getDatasheetByName(self, datasheet_name:str):
+        """ 
+        Prende griglia da nome.
+        """
+        logger.debug('Search datasheet by name %s' % datasheet_name)
+        rq = '%s/datasheet/findByName?name=%s' % (self.ep_element, datasheet_name)
+        r = self.apibot.get(rq)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        _datasheet = json.loads(r.text)
+        return _datasheet
+
+
+    def updateDatasheet(self, datasheet_id:int, payload):
+        """
+        Update datasheet.
+        """
+        logger.debug(f'Updating datasheet {datasheet_id}')
+        rq = '%s/datasheet/%s' % (self.ep_element, datasheet_id)
+        r = self.apibot.post(rq, json=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        _datasheet = json.loads(r.text)
+        return _datasheet    
