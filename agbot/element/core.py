@@ -36,37 +36,9 @@ class Element(object):
         Initialize main class with this and that.
         """
         logger.debug('Init Element')
-        session = Session()
+        session = Session(profile_name)
         self.apibot = session.apibot
         self.ep_element = session.ep_element
-
-
-    def createNorm(self, normName:str):
-        """
-        Create new norm.
-        """
-        logger.debug('Creating norm %s' % normName)
-        rq = '%s/norm' % (self.ep_element)
-        payload = {'name':normName}
-        r = self.apibot.post(rq, json=payload)
-        if 201 != r.status_code:
-            parseApiError(r)
-            return False
-        return json.loads(r.text)  
-  
-
-    def getNorm(self, normName:str):
-        """
-        Prende la norm dal nome.
-        """
-        logger.debug('Get norm by name %s' % normName)
-        rq = '%s/norm/findByName' % (self.ep_element)
-        payload = {'name':normName}
-        r = self.apibot.get(rq, params=payload)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        return json.loads(r.text)  
 
 
     def createItem(self, payload):
@@ -139,7 +111,21 @@ class Element(object):
         if 204 != r.status_code:
             parseApiError(r)
             return False 
-        logger.info('Sync item %s norms %s' % (item_id, payload))              
+        logger.info(f'Sync item {item_id} norms complete')              
+        return True
+
+
+    def syncItemCatalogs(self, item_id:int, payload):
+        """
+        Sync item catalogs.
+        """
+        logger.debug('Sync item %s catalogs %s' % (item_id, payload))
+        rq = '%s/item/%s/catalog/sync' % (self.ep_element, item_id)
+        r = self.apibot.post(rq, json=payload)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        logger.info(f'Sync item {item_id} catalogs complete')              
         return True
 
 
