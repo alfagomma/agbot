@@ -41,6 +41,19 @@ class Element(object):
         self.ep_element = session.ep_element
 
 
+    def getItems(self, query=None):
+        """
+        Prende tutti gli items.
+        """
+        logger.debug('Getting all the items with query' % query)
+        rq = '%s/item' % (self.ep_element)
+        r = self.apibot.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        _items = json.loads(r.text)
+        return _items
+
+
     def createItem(self, payload):
         """
         Create new item.
