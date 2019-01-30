@@ -214,7 +214,7 @@ class Element(object):
         """
         Associa categoria a famiglia
         """
-        logger.debug(f'Pathing family {family_id} with category {category_id}')
+        logger.debug(f'Patching family {family_id} with category {category_id}')
         rq = '%s/family/%s' % (self.ep_element, family_id)
         payload = {
             'category_id': category_id

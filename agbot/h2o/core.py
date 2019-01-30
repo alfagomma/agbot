@@ -28,5 +28,38 @@ class H2o(object):
         logger.debug('Init H2o')
         session = Session()
         self.apibot = session.apibot
-        self.ep_element = session.ep_element
-        logger.info('Ciao sono H2o')
+        self.ep_h2o = session.ep_h2o
+
+
+    def createOrder(self, payload):
+        """
+        Create new order
+        """
+        logger.debug('Creating order %s' % payload)
+        rq = '%s/order' % (self.ep_h2o)
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        _order = json.loads(r.text)
+        logger.info('Creating new order %s' % _order['data']['id'])
+        return _order
+
+
+    def getCustomerFromErp(self, customer_id, erp_id):
+        """
+        Read customer from erp external ID
+        """
+        logger.debug(f'Reading customer {customer_id} for erp {erp_id}')
+        rq = '%s/customer/findByErpId' % (self.ep_h2o)
+        payload = {
+            'erp_id':erp_id, 
+            'ext_id': customer_id 
+            }
+        r = self.apibot.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        _customer = json.loads(r.text)
+        logger.debug('Find customer %s' % _customer['data']['id'])
+        return _customer
