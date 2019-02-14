@@ -271,12 +271,33 @@ class Element(object):
         return _family
 
 
+    def updateFamilyHq(self, family_id:int, localFile):
+        """ 
+        Aggiorna HQ famiglia. 
+        """
+        logger.debug('Update family %s hq with file %s' % (family_id, localFile))
+        rq = '%s/family/%s/hq' % (self.ep_element, family_id)
+        fin = open(localFile, 'rb')
+        files = {'src': fin}
+        #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
+        try:
+            r = self.apibot.post(rq, files=files)
+        except Exception:
+            logging.exception("Exception occurred")
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        _family = json.loads(r.text)
+        return _family
+
+
     def attachFamilyNorm(self, family_id:int, norm_id:int):
         """
         Aggiunge una norma riconosciuta, alla famiglia.
         SUGGEST - USE syncFamilyNorm!
         """
-        logger.debug('Attach norm %s at family %s' % (norm_id, family_id))
+        logger.debug('Attaching norm %s at family %s ...' % (norm_id, family_id))
         rq = '%s/family/%s/norm' % (self.ep_element, family_id)
         payload = {
             'norm_id' : norm_id
@@ -309,7 +330,7 @@ class Element(object):
         """
         Aggiunge una feature alla famiglia.
         """
-        logger.debug('Attaching feature %s at family %s' % (family_id, feature_id) )
+        logger.debug('Attaching feature %s at family %s' % (feature_id, family_id) )
         payload = {
             'feature_id': feature_id,
             'description': description
