@@ -67,12 +67,31 @@ class Element(object):
         return json.loads(r.text)
 
 
+    def getItemFromExt_id(self, ext_id:int, params=None):
+        """
+        Get item from ext_id.
+        """
+        logger.debug(f'Search item ext_id {ext_id}.')
+        payload ={
+            'ext_id' : ext_id
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}        
+        rq = '%s/item/findByExtId' % (self.ep_element)
+        r = self.apibot.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text) 
+
+
     def getItemFromErpId(self, erp_id:int, ext_id:str):
         """
         Get item from ext_id of Erp.
         """
         logger.debug(f'Search item ext_id {ext_id} for erp {erp_id}.')
-        rq = '%s/item/findByErpId' % (self.ep_element)
+        rq = '%s/item/findByErpExtId' % (self.ep_element)
         payload = {
             'erp_id' : erp_id,
             'ext_id' : ext_id
@@ -82,25 +101,8 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text) 
-    
 
-    def getItemFromErpCode(self, erp_id:int, ext_code:str):
-        """
-        Get item from ext_code of Erp.
-        """
-        logger.debug(f'Search item ext_code {ext_code} for erp {erp_id}')
-        rq = '%s/item/findByErpCode' % (self.ep_element)
-        payload = {
-            'erp_id' : erp_id,
-            'ext_code' : ext_code
-        }
-        r = self.apibot.post(rq, params=payload)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        return json.loads(r.text) 
 
-    
     def updateItem(self, item_id:int, payload):
         """
         Update item.
@@ -198,11 +200,16 @@ class Element(object):
         return _family        
         
 
-    def getFamilyFromCode(self, family_code:str):
+    def getFamilyFromCode(self, family_code:str, params=None):
         """ Prende famiglia da nome """
+        payload ={
+            'code' : family_code
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}
         logger.debug('Get family %s' % family_code)
         rq = '%s/family/findByCode' % (self.ep_element)
-        payload = {'code': family_code}
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
