@@ -55,7 +55,7 @@ class Sqm(object):
         return json.loads(r.text)  
   
 
-    def getNorm(self, normName:str):
+    def getNormFromName(self, normName:str):
         """
         Prende la norm dal nome.
         """
