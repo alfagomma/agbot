@@ -86,6 +86,25 @@ class Element(object):
         return json.loads(r.text) 
 
 
+    def getItemFromCode(self, item_code:str):
+        """
+        Get item from code
+        """
+        logger.debug(f'Search item code {item_code}.')
+        payload ={
+            'code' : item_code
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}        
+        rq = '%s/item/findByCode' % (self.ep_element)
+        r = self.apibot.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text) 
+
+
     def getItemFromErpId(self, erp_id:int, ext_id:str):
         """
         Get item from ext_id of Erp.
@@ -107,7 +126,7 @@ class Element(object):
         """
         Update item.
         """
-        logger.debug(f'Updating item {item_id}')
+        logger.debug(f'Updating item {item_id} with {payload}')
         rq = '%s/item/%s' % (self.ep_element, item_id)
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
@@ -120,7 +139,7 @@ class Element(object):
         """
         Sync item norm.
         """
-        logger.debug('Sync item %s norm %s' % (item_id, payload))
+        logger.debug(f'Sync item {item_id} norm {payload}')
         rq = '%s/item/%s/norm' % (self.ep_element, item_id)
         r = self.apibot.post(rq, json=payload)
         if 204 != r.status_code:
