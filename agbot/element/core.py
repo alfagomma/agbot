@@ -8,7 +8,7 @@ Element SDK
 
 __author__ = "Davide Pellegrino"
 __version__ = "1.2.0"
-__date__ = "2019-01-17"
+__date__ = "2019-05-17"
 
 import json
 import logging
@@ -20,7 +20,7 @@ from dotenv import load_dotenv
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.DEBUG)
+c_handler.setLevel(logging.WARNING)
 # Create formatters and add it to handlers
 c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 c_handler.setFormatter(c_format)
@@ -40,19 +40,30 @@ class Element(object):
         self.apibot = session.apibot
         self.ep_element = session.ep_element
 
+    #item
+    def getItem(self, item_id:int, params=None):
+        """
+        Legge un item dal suo id.
+        """
+        logger.debug('Getting all the items')
+        rq = f'{self.ep_element}/item/{item_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        item = json.loads(r.text)
+        return item
 
     def getItems(self, query=None):
         """
         Prende tutti gli items.
         """
-        logger.debug('Getting all the items with query' % query)
+        logger.debug('Getting all the items')
         rq = '%s/item' % (self.ep_element)
         r = self.apibot.get(rq, params=query)
         if 200 != r.status_code:
             return False
         _items = json.loads(r.text)
         return _items
-
 
     def createItem(self, payload):
         """
@@ -65,7 +76,6 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)
-
 
     def getItemFromExt_id(self, ext_id:int, params=None):
         """
@@ -85,7 +95,6 @@ class Element(object):
             return False
         return json.loads(r.text) 
 
-
     def getItemFromCode(self, item_code:str):
         """
         Get item from code
@@ -93,17 +102,13 @@ class Element(object):
         logger.debug(f'Search item code {item_code}.')
         payload ={
             'code' : item_code
-        }
-        if params:
-            new_payload = dict(item.split("=") for item in params.split('&'))
-            payload = {**payload, **new_payload}        
+        }     
         rq = '%s/item/findByCode' % (self.ep_element)
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
         return json.loads(r.text) 
-
 
     def getItemFromErpId(self, erp_id:int, ext_id:str):
         """
@@ -121,7 +126,6 @@ class Element(object):
             return False
         return json.loads(r.text) 
 
-
     def updateItem(self, item_id:int, payload):
         """
         Update item.
@@ -133,7 +137,6 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)
-
 
     def syncItemNorm(self, item_id:int, payload):
         """
@@ -148,7 +151,6 @@ class Element(object):
         logger.info(f'Sync item {item_id} norms complete')              
         return True
 
-
     def syncItemCatalogs(self, item_id:int, payload):
         """
         Sync item catalogs.
@@ -162,7 +164,42 @@ class Element(object):
         logger.info(f'Sync item {item_id} catalogs complete')              
         return True
 
+    def itemAddCad(self, item_id:int, localFile):
+        """ 
+        Aggiunge un file cad all'item. 
+        """
+        logger.debug('')
+        rq = '%s/item/%s/cad' % (self.ep_element, item_id)
+        fin = open(localFile, 'rb')
+        files = {'src': fin}
+        try:
+            r = self.apibot.post(rq, files=files)
+        except Exception:
+            logging.exception("Exception occurred")
+            return False
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        cad = json.loads(r.text)
+        return cad
 
+    def itemDeleteCad(self, item_id:int, cad_id:int):
+        """ 
+        Elimina un file cad dall'item. 
+        """
+        logger.debug('')
+        rq = f'{self.ep_element}/item/{item_id}/cad/{cad_id}'
+        try:
+            r = self.apibot.delete(rq)
+        except Exception:
+            logging.exception("Exception occurred")
+            return False
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    #family
     def createFamily(self, family_code:str):
         """ crea una nuova famiglia """
         logger.debug('Creating new family %s' % family_code)
@@ -178,19 +215,17 @@ class Element(object):
         logger.info('Create family %s' % _family['data']['id'])
         return _family
 
-
     def getFamilies(self, query=None):
         """
         Prende tutte le famiglie.
         """
-        logger.debug('Getting all the families with query' % query)
+        logger.debug('Getting all the families')
         rq = '%s/family' % (self.ep_element)
         r = self.apibot.get(rq, params=query)
         if 200 != r.status_code:
             return False
         _families = json.loads(r.text)
         return _families
-
 
     def getFamily(self, family_id:int, params=None):
         """
@@ -204,7 +239,6 @@ class Element(object):
         _family = json.loads(r.text)
         return _family
 
-
     def updateFamily(self, family_id:int, payload):
         """
         Update family.
@@ -217,7 +251,6 @@ class Element(object):
             return False
         _family = json.loads(r.text)
         return _family        
-        
 
     def getFamilyFromCode(self, family_code:str, params=None):
         """ Prende famiglia da nome """
@@ -234,7 +267,6 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)    
-
 
     def patchFamilyCategory(self, family_id:int, category_id:int):
         """
@@ -255,7 +287,6 @@ class Element(object):
             return False
         return json.loads(r.text)
 
-
     def patchFamilyDatasheet(self, family_id:int, datasheet_id:int):
         """
         Associa datasheet a famiglia
@@ -274,7 +305,6 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)
-
 
     def updateFamilyCover(self, family_id:int, localFile):
         """ 
@@ -296,7 +326,6 @@ class Element(object):
         _family = json.loads(r.text)
         return _family
 
-
     def updateFamilyHq(self, family_id:int, localFile):
         """ 
         Aggiorna HQ famiglia. 
@@ -317,7 +346,6 @@ class Element(object):
         _family = json.loads(r.text)
         return _family
 
-
     def attachFamilyNorm(self, family_id:int, norm_id:int):
         """
         Aggiunge una norma riconosciuta, alla famiglia.
@@ -334,7 +362,6 @@ class Element(object):
             return False
         return True
 
-
     def attachFamilyQuality(self, family_id:int, quality_id:int):
         """
         Aggiunge una qualità alla famiglia
@@ -350,7 +377,6 @@ class Element(object):
             parseApiError(r)
             return False
         return True        
-
 
     def attachFamilyFeature(self, family_id:int, feature_id:int, description:str):
         """
@@ -372,7 +398,7 @@ class Element(object):
             return False
         return True
 
-
+    #feature
     def createFeature(self, feature_name:str):
         """
         Crea una nuova feature.
@@ -388,7 +414,6 @@ class Element(object):
             return False
         _feature = json.loads(r.text)
         return _feature
-
 
     def getFeature(self, feature_name:str):
         """
@@ -406,7 +431,7 @@ class Element(object):
         _features = json.loads(r.text)
         return _features
 
-
+    #division
     def getDivisionByName(self, division_name:str):
         """ 
         Prende divisione da nome.
@@ -419,7 +444,6 @@ class Element(object):
             return False
         _division = json.loads(r.text)
         return _division
-
 
     def createDivision(self, division_name:str):
         """ 
@@ -435,7 +459,7 @@ class Element(object):
         _division = json.loads(r.text)
         return _division
 
-
+    #category
     def createCategory(self, division_id:int, category_name:str):
         """
         Crea un categoria.
@@ -453,7 +477,6 @@ class Element(object):
         _category = json.loads(r.text)
         return _category
 
-
     def getCategoryByName(self, category_name:str):
         """
         Prende categoria da nome.
@@ -466,7 +489,6 @@ class Element(object):
             return False
         _category = json.loads(r.text)
         return _category
-
 
     def updateCategoryCover(self, category_id:int, localFile):
         """
@@ -487,7 +509,7 @@ class Element(object):
         _category = json.loads(r.text)        
         return _category
 
-
+    #datasheet
     def createDatasheet(self, payload):
         """
         Create new datasheet.
@@ -499,7 +521,6 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)
-
 
     def getDatasheetByName(self, datasheet_name:str):
         """ 
@@ -513,7 +534,6 @@ class Element(object):
             return False
         _datasheet = json.loads(r.text)
         return _datasheet
-
 
     def updateDatasheet(self, datasheet_id:int, payload):
         """
