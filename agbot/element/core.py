@@ -15,7 +15,6 @@ import logging
 import time
 
 from agbot.session import Session, parseApiError
-from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -45,7 +44,7 @@ class Element(object):
         """
         Legge un item dal suo id.
         """
-        logger.debug('Getting all the items')
+        logger.debug(f'Get item {item_id}')
         rq = f'{self.ep_element}/item/{item_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
