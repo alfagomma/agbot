@@ -1,4 +1,4 @@
-AGBot Beta1
+AGBot Beta2
 ====================
 
 NOTE DI VERSIONE

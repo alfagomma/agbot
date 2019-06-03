@@ -56,7 +56,7 @@ class H2o(object):
         """
         Get order by id
         """
-        logger.debug('Creating order %s' % payload)
+        logger.debug(f'Reading order {order_id}..')
         rq = f'{self.ep_h2o}/order/{order_id}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:

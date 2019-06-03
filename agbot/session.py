@@ -136,6 +136,9 @@ def parseApiError(response):
             problem = json.loads(response.text)
         except Exception:
             # Add handlers to the logger
-            logger.warning('Not jsonable')
+            logger.error('Not jsonable')
             problem = response.text
-        logger.error('STATUS:%s | PROBLEM: %s ' % (status, problem))
+        msg = f'status {status}'
+        if 'title' in problem:
+            msg+=f" / {problem['title']}"
+        logger.warning(msg)
