@@ -137,6 +137,18 @@ class Element(object):
             return False
         return json.loads(r.text)
 
+    def createItemAttribute(self, item_id:int, payload):
+        """
+        Create new item attributes.
+        """
+        logger.debug(f'Creating item {item_id} attributes {payload}')
+        rq = '%s/item/%s/attribute' % (self.ep_element, item_id)
+        r = self.apibot.post(rq, json=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
     def syncItemNorm(self, item_id:int, payload):
         """
         Sync item norm.
