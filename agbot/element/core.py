@@ -7,13 +7,10 @@ Element SDK
 """
 
 __author__ = "Davide Pellegrino"
-__version__ = "1.2.0"
-__date__ = "2019-05-17"
+__version__ = "1.2.2"
+__date__ = "2019-06-08"
 
-import json
-import logging
-import time
-
+import json, logging, time
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
@@ -29,7 +26,7 @@ class Element(object):
     """
     Element core class .
     """
-    
+
     def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
@@ -222,9 +219,9 @@ class Element(object):
         if 201 != r.status_code:
             parseApiError(r)
             return False
-        _family = json.loads(r.text)
-        logger.info('Create family %s' % _family['data']['id'])
-        return _family
+        family = json.loads(r.text)
+        logger.info('Create family %s' % family['data']['id'])
+        return family
 
     def getFamilies(self, query=None):
         """
@@ -235,8 +232,8 @@ class Element(object):
         r = self.apibot.get(rq, params=query)
         if 200 != r.status_code:
             return False
-        _families = json.loads(r.text)
-        return _families
+        families = json.loads(r.text)
+        return families
 
     def getFamily(self, family_id:int, params=None):
         """
@@ -543,8 +540,8 @@ class Element(object):
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        _datasheet = json.loads(r.text)
-        return _datasheet
+        datasheet = json.loads(r.text)
+        return datasheet
 
     def updateDatasheet(self, datasheet_id:int, payload):
         """
@@ -556,5 +553,46 @@ class Element(object):
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        _datasheet = json.loads(r.text)
-        return _datasheet    
+        datasheet = json.loads(r.text)
+        return datasheet
+
+    #unit of measure
+    def getUoms(self, query=None):
+        """Get all uoms."""
+        logger.debug('Getting all unit of measure...')
+        rq = f'{self.ep_element}/unitofmeasure'
+        r = self.apibot.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        uoms = json.loads(r.text)
+        return uoms
+
+    def getUom(self, uom_id:int, query=None):
+        """
+        Leggo uom da id.
+        """
+        logger.debug(f'Reading family {uom_id}...')
+        rq = f'{self.ep_element}/unitofmeasure/{uom_id}'
+        r = self.apibot.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        uom = json.loads(r.text)
+        return uom
+
+    def getUomFromCode(self, code:str, query=None):
+        """
+        Leggo uom da code.
+        """
+        logger.debug(f'Reading uom code {code}...')
+        params = {
+            'code': code
+            }
+        if query:
+            new_params = dict(item.split("=") for item in query.split('&'))
+            params = {**params, **new_params}     
+        rq = f'{self.ep_element}/unitofmeasure/findByCode'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        uom = json.loads(r.text)
+        return uom        
