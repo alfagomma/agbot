@@ -71,7 +71,9 @@ class Element(object):
         if 201 != r.status_code:
             parseApiError(r)
             return False
-        return json.loads(r.text)
+        item = json.loads(r.text)
+        logger.info('Create item %s' % item['data']['id'])
+        return item
 
     def getItemFromExt_id(self, ext_id:int, params=None):
         """
@@ -133,6 +135,19 @@ class Element(object):
             parseApiError(r)
             return False
         return json.loads(r.text)
+
+    def patchItem(self, item_id:int, payload):
+        """
+        Patch know item field.
+        """
+        logger.debug(f'Patching item {item_id} with {payload}')
+        rq = '%s/item/%s' % (self.ep_element, item_id)
+        r = self.apibot.patch(rq, json=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        item = json.loads(r.text)        
+        return item
 
     def createItemAttribute(self, item_id:int, payload):
         """
@@ -208,13 +223,10 @@ class Element(object):
         return True
 
     #family
-    def createFamily(self, family_code:str):
+    def createFamily(self, payload):
         """ crea una nuova famiglia """
-        logger.debug('Creating new family %s' % family_code)
+        logger.debug('Creating new family %s' % payload)
         rq = '%s/family' % (self.ep_element)
-        payload = {
-            'code': family_code
-            }
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
