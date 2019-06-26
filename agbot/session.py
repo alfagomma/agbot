@@ -109,13 +109,13 @@ class Session(object):
         expirein = int(time.time()) + responseUid['expires_in']
 
         uid = responseUid['access_token']
-        rSid = self.apibot.get(rqSid)
+        rSid = self.apibot.post(rqSid)
         if 200 != rSid.status_code:
             parseApiError(rSid)
             return False  
         responseSid = json.loads(rSid.text) 
         sid = responseSid['token']
-        rCsrf = self.apibot.get(rqCsrf)
+        rCsrf = self.apibot.post(rqCsrf)
         if 200 != rCsrf.status_code:
                 parseApiError(rCsrf)
                 return False
