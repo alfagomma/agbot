@@ -451,6 +451,85 @@ class Element(object):
         _features = json.loads(r.text)
         return _features
 
+    #crtable
+    def createCrtable(self, payload):
+        """ crea una nuova tabella """
+        logger.debug('Creating new crtabel %s' % payload)
+        rq = '%s/crtable' % (self.ep_element)
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        crtable = json.loads(r.text)
+        logger.info('Create crtable %s' % crtable['data']['id'])
+        return crtable
+
+    def getCrtable(self, crtable_id:int, params=None):
+        """
+        Legge una tabella dal suo id.
+        """
+        logger.debug(f'Get crtable {crtable_id}')
+        rq = f'{self.ep_element}/crtable/{crtable_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        crtable = json.loads(r.text)
+        return crtable
+
+    def getCrtableFromSlug(self, slug:str):
+        """
+        Legge una tabella dal suo slug.
+        """
+        logger.debug(f'Get crtable slug {slug}')
+        rq = f'{self.ep_element}/crtable/findBySlug'
+        r = self.apibot.get(rq, params={
+            'slug' : slug
+        })
+        if 200 != r.status_code:
+            return False
+        crtable = json.loads(r.text)
+        return crtable
+
+    def getCrtableFromName(self, name:str):
+        """
+        Legge una tabella dal suo name.
+        """
+        logger.debug(f'Get crtable name {name}')
+        rq = f'{self.ep_element}/crtable/findByName'
+        r = self.apibot.get(rq, params={
+            'name' : name
+        })
+        if 200 != r.status_code:
+            return False
+        crtable = json.loads(r.text)
+        return crtable
+
+
+    #crimping
+    def createCrimping(self, crtable_id:int, payload):
+        """ crea nuovo parametro di pinzatura per tabella """
+        logger.debug('Creating new crimping %s' % payload)
+        rq = f'{self.ep_element}/crtable/{crtable_id}/crimping'
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        crimping = json.loads(r.text)
+        logger.info('Create crimping %s' % crimping['data']['id'])
+        return crimping
+
+    def getCrimping(self, crtable_id:int, crimping_id:int, params=None):
+        """
+        Legge un parametro dalla tabella pinzatura.
+        """
+        logger.debug(f'Get crimping {crimping_id} from table {crtable_id}')
+        rq = f'{self.ep_element}/crtable/{crtable_id}/crimping/{crimping_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        crtable = json.loads(r.text)
+        return crtable
+
     #division
     def getDivisionByName(self, division_name:str):
         """ 
