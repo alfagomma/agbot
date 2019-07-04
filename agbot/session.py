@@ -18,7 +18,7 @@ from sys import exit
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.DEBUG)
+c_handler.setLevel(logging.WARNING)
 # Create formatters and add it to handlers
 c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 c_handler.setFormatter(c_format)
@@ -143,4 +143,7 @@ def parseApiError(response):
         msg = f'status {status}'
         if 'title' in problem:
             msg+=f" / {problem['title']}"
+        if 'errors' in problem:
+            for k,v in problem['errors'].items():
+                msg+=f" -{k}:{v}" 
         logger.warning(msg)
