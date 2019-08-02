@@ -288,6 +288,25 @@ class Element(object):
             return False
         return json.loads(r.text)    
 
+    def patchFamily(self, family_id:int, field:str, value):
+        """
+        Associa categoria a famiglia
+        """
+        logger.debug(f'Patching family {family_id} ')
+        rq = '%s/family/%s' % (self.ep_element, family_id)
+        payload = {
+            field: value
+            }
+        try:
+            r = self.apibot.patch(rq, json=payload)
+        except Exception:
+            logging.exception("Exception occurred")
+            return False
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
+
     def patchFamilyCategory(self, family_id:int, category_id:int):
         """
         Associa categoria a famiglia
@@ -646,6 +665,47 @@ class Element(object):
             return False
         datasheet = json.loads(r.text)
         return datasheet
+
+    #catalog
+    def getCatalog(self, catalog_id:int, params=None):
+        """ Get catalog by ID """
+        logger.debug(f'Get catalog {catalog_id}')
+        rq = f'{self.ep_element}/catalog/{catalog_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        item = json.loads(r.text)
+        return item
+
+    def getTree(self, catalog_id:int, tree_id:int, params=None):
+        """ Get catalog tree by ID """
+        logger.debug(f'Get catalog tree {catalog_id}')
+        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        tree = json.loads(r.text)
+        return tree    
+
+    def getTreeLeaves(self, catalog_id:int, tree_id:int, params=None):
+        """ Get catalog tree leaves """
+        logger.debug(f'Get catalog tree {catalog_id}')
+        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}/leaf'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        leaves = json.loads(r.text)
+        return leaves  
+
+    def getTreeLeaf(self, catalog_id:int, tree_id:int, leaf_id:int, params=None):
+        """ Get catalog tree leaf ID """
+        logger.debug(f'Get catalog tree {catalog_id}')
+        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}/leaf/{leaf_id}'
+        r = self.apibot.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        leaf = json.loads(r.text)
+        return leaf       
 
     #unit of measure
     def getUoms(self, query=None):
