@@ -222,6 +222,23 @@ class Element(object):
             return False
         return True
 
+    #attribute
+    def getAttributeByName(self, attribute_name:str, params=None):
+        """ Attribute by name """
+        payload ={
+            'name' : attribute_name
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}
+        logger.debug('Get attribute %s' % attribute_name)
+        rq = '%s/attribute/findByName' % (self.ep_element)
+        r = self.apibot.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text) 
+
     #family
     def createFamily(self, payload):
         """ crea una nuova famiglia """
@@ -432,6 +449,21 @@ class Element(object):
         except Exception:
             logger.exception('Exception occured')
             return False
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def attachFamilyAttribute(self, family_id:int, attribute_id:int):
+        """
+        Add attribute to family.
+        """
+        logger.debug(f'Attaching attribute {attribute_id} to family {family_id} %s at family %s ...')
+        rq = f'{self.ep_element}/family/{family_id}/attribute'
+        payload = {
+            'attribute_id' : attribute_id
+            }
+        r = self.apibot.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
