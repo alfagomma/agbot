@@ -223,6 +223,18 @@ class Element(object):
         return True
 
     #attribute
+    def createAttribute(self, payload):
+        """ crea un nuovo attributo """
+        logger.debug('Creating new attribute %s' % payload)
+        rq = '%s/attribute' % (self.ep_element)
+        r = self.apibot.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        attribute = json.loads(r.text)
+        logger.info('Create attribute %s' % attribute['data']['id'])
+        return attribute
+
     def getAttributeByName(self, attribute_name:str, params=None):
         """ Attribute by name """
         payload ={
@@ -305,15 +317,12 @@ class Element(object):
             return False
         return json.loads(r.text)    
 
-    def patchFamily(self, family_id:int, field:str, value):
+    def patchFamily(self, family_id:int, payload):
         """
         Associa categoria a famiglia
         """
         logger.debug(f'Patching family {family_id} ')
         rq = '%s/family/%s' % (self.ep_element, family_id)
-        payload = {
-            field: value
-            }
         try:
             r = self.apibot.patch(rq, json=payload)
         except Exception:
@@ -458,8 +467,23 @@ class Element(object):
         """
         Add attribute to family.
         """
-        logger.debug(f'Attaching attribute {attribute_id} to family {family_id} %s at family %s ...')
+        logger.debug(f'Attaching attribute {attribute_id} to family {family_id}...')
         rq = f'{self.ep_element}/family/{family_id}/attribute'
+        payload = {
+            'attribute_id' : attribute_id
+            }
+        r = self.apibot.post(rq, json=payload)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def attachFamilySorting(self, family_id:int, attribute_id:int):
+        """
+        Add attribute to sorting
+        """
+        logger.debug(f'Attaching attribute {attribute_id} to family {family_id} sorting...')
+        rq = f'{self.ep_element}/family/{family_id}/sorting'
         payload = {
             'attribute_id' : attribute_id
             }
