@@ -605,43 +605,43 @@ class Element(object):
         crtable = json.loads(r.text)
         return crtable
 
-    #division
-    def getDivisionByName(self, division_name:str):
+    #hub
+    def getHubByName(self, hub_name:str):
         """ 
-        Prende divisione da nome.
+        Get hub from name
         """
-        logger.debug('Search division by name %s' % division_name)
-        rq = '%s/division/findByName?name=%s' % (self.ep_element, division_name)
+        logger.debug('Search hub by name %s' % hub_name)
+        rq = f'{self.ep_element}/hub/findByName?name={hub_name}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        _division = json.loads(r.text)
-        return _division
+        _hub = json.loads(r.text)
+        return _hub
 
-    def createDivision(self, division_name:str):
+    def createHub(self, hub_name:str):
         """ 
-        Crea una divisione.
+        Create new hub
         """
-        logger.debug('Creating new division with name %s' % division_name)
-        rq = '%s/division' % (self.ep_element)
-        payload = {'name':division_name}
+        logger.debug('Creating new hub with name %s' % hub_name)
+        rq = f'{self.ep_element}/hub'
+        payload = {'name':hub_name}
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
-        _division = json.loads(r.text)
-        return _division
+        _hub = json.loads(r.text)
+        return _hub
 
     #category
-    def createCategory(self, division_id:int, category_name:str):
+    def createCategory(self, hub_id:int, category_name:str):
         """
         Crea un categoria.
         """
-        logger.debug('Creating new category with name %s at division %s' % (category_name, division_id))
+        logger.debug('Creating new category with name %s at hub %s' % (category_name, hub_id))
         rq = '%s/category' % (self.ep_element)
         payload = {
-            'division_id': division_id,
+            'hub_id': hub_id,
             'name':category_name
             }
         r = self.apibot.post(rq, json=payload)
