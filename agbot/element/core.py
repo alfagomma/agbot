@@ -14,12 +14,12 @@ import json, logging, time
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.WARNING)
 c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.WARNING)
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
+# c_handler.setLevel(logging.WARNING)
+# # Create formatters and add it to handlers
+# c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+# c_handler.setFormatter(c_format)
 logger.addHandler(c_handler)
 
 class Element(object):
@@ -727,7 +727,9 @@ class Element(object):
         """ Get catalog by ID """
         logger.debug(f'Get catalog {catalog_id}')
         rq = f'{self.ep_element}/catalog/{catalog_id}'
+        logger.debug(rq)
         r = self.apibot.get(rq, params=params)
+        logger.debug(r)
         if 200 != r.status_code:
             return False
         item = json.loads(r.text)
@@ -746,7 +748,10 @@ class Element(object):
     def getTreeLeaves(self, catalog_id:int, tree_id:int, params=None):
         """ Get catalog tree leaves """
         logger.debug(f'Get catalog tree {catalog_id}')
-        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}/leaf'
+        rq = f'{self.ep_element}/leaf'
+        params = {
+            'tree': tree_id
+        }
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -756,7 +761,7 @@ class Element(object):
     def getTreeLeaf(self, catalog_id:int, tree_id:int, leaf_id:int, params=None):
         """ Get catalog tree leaf ID """
         logger.debug(f'Get catalog tree {catalog_id}')
-        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}/leaf/{leaf_id}'
+        rq = f'{self.ep_element}/leaf/{leaf_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
