@@ -15,7 +15,6 @@ tests/.coverage
 *.egg-info
 
 # vitualenv
-Pipfile
 Pipfile.lock
 
 # Test state / virtualenvs
