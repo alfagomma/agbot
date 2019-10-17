@@ -13,7 +13,7 @@ VERSION_RE = re.compile(r'''__version__ = ['"]([0-9.]+)['"]''')
 
 requires = [
     'redis>=3.0',
-    'redis>=2.7',
+    'requests>=2.7',
 ]
 
 def get_version():
