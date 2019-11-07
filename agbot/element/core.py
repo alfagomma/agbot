@@ -7,34 +7,28 @@ Element SDK
 """
 
 __author__ = "Davide Pellegrino"
-__version__ = "1.2.2"
-__date__ = "2019-06-08"
+__version__ = "2.1.1"
+__date__ = "2019-11-04"
 
 import json, logging, time
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.WARNING)
-c_handler = logging.StreamHandler()
-# c_handler.setLevel(logging.WARNING)
-# # Create formatters and add it to handlers
-# c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# c_handler.setFormatter(c_format)
-logger.addHandler(c_handler)
-
+logger = logging.getLogger()
 class Element(object):
     """
     Element core class .
     """
 
-    def __init__(self, profile_name=None):
+    endpoint = None
+
+    def __init__(self, profile_name='default'):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Element')
+        logger.debug('Init Element SDK')
         session = Session(profile_name)
         self.apibot = session.apibot
-        self.ep_element = session.ep_element
+        self.endpoint = f'{session.ep_agapi}/element'
 
     #item
     def getItem(self, item_id:int, params=None):
@@ -42,7 +36,7 @@ class Element(object):
         Legge un item dal suo id.
         """
         logger.debug(f'Get item {item_id}')
-        rq = f'{self.ep_element}/item/{item_id}'
+        rq = f'{self.endpoint}/item/{item_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -54,7 +48,7 @@ class Element(object):
         Prende tutti gli items.
         """
         logger.debug('Getting all the items')
-        rq = '%s/item' % (self.ep_element)
+        rq = '%s/item' % (self.endpoint)
         r = self.apibot.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -66,7 +60,7 @@ class Element(object):
         Create new item.
         """
         logger.debug('Creating item %s' % payload)
-        rq = '%s/item' % (self.ep_element)
+        rq = '%s/item' % (self.endpoint)
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -86,7 +80,7 @@ class Element(object):
         if params:
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}        
-        rq = '%s/item/findByExtId' % (self.ep_element)
+        rq = '%s/item/findByExtId' % (self.endpoint)
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -101,7 +95,7 @@ class Element(object):
         payload ={
             'code' : item_code
         }     
-        rq = '%s/item/findByCode' % (self.ep_element)
+        rq = '%s/item/findByCode' % (self.endpoint)
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -113,7 +107,7 @@ class Element(object):
         Get item from ext_id of Erp.
         """
         logger.debug(f'Search item ext_id {ext_id} for erp {erp_id}.')
-        rq = '%s/item/findByErpExtId' % (self.ep_element)
+        rq = '%s/item/findByErpExtId' % (self.endpoint)
         payload = {
             'erp_id' : erp_id,
             'ext_id' : ext_id
@@ -129,7 +123,7 @@ class Element(object):
         Update item.
         """
         logger.debug(f'Updating item {item_id} with {payload}')
-        rq = '%s/item/%s' % (self.ep_element, item_id)
+        rq = '%s/item/%s' % (self.endpoint, item_id)
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -141,7 +135,7 @@ class Element(object):
         Patch know item field.
         """
         logger.debug(f'Patching item {item_id} with {payload}')
-        rq = '%s/item/%s' % (self.ep_element, item_id)
+        rq = '%s/item/%s' % (self.endpoint, item_id)
         r = self.apibot.patch(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -154,7 +148,7 @@ class Element(object):
         Create new item attributes.
         """
         logger.debug(f'Creating item {item_id} attributes {payload}')
-        rq = '%s/item/%s/attribute' % (self.ep_element, item_id)
+        rq = '%s/item/%s/attribute' % (self.endpoint, item_id)
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -166,7 +160,7 @@ class Element(object):
         Sync item norm.
         """
         logger.debug(f'Sync item {item_id} norm {payload}')
-        rq = '%s/item/%s/norm' % (self.ep_element, item_id)
+        rq = '%s/item/%s/norm' % (self.endpoint, item_id)
         r = self.apibot.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
@@ -179,7 +173,7 @@ class Element(object):
         Sync item catalogs.
         """
         logger.debug('Sync item %s catalogs %s' % (item_id, payload))
-        rq = '%s/item/%s/catalog/sync' % (self.ep_element, item_id)
+        rq = '%s/item/%s/catalog/sync' % (self.endpoint, item_id)
         r = self.apibot.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
@@ -192,7 +186,7 @@ class Element(object):
         Aggiunge un file cad all'item. 
         """
         logger.debug('')
-        rq = '%s/item/%s/cad' % (self.ep_element, item_id)
+        rq = '%s/item/%s/cad' % (self.endpoint, item_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
         try:
@@ -211,7 +205,7 @@ class Element(object):
         Elimina un file cad dall'item. 
         """
         logger.debug('')
-        rq = f'{self.ep_element}/item/{item_id}/cad/{cad_id}'
+        rq = f'{self.endpoint}/item/{item_id}/cad/{cad_id}'
         try:
             r = self.apibot.delete(rq)
         except Exception:
@@ -226,7 +220,7 @@ class Element(object):
     def createAttribute(self, payload):
         """ crea un nuovo attributo """
         logger.debug('Creating new attribute %s' % payload)
-        rq = '%s/attribute' % (self.ep_element)
+        rq = '%s/attribute' % (self.endpoint)
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -244,7 +238,7 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
         logger.debug('Get attribute %s' % attribute_name)
-        rq = '%s/attribute/findByName' % (self.ep_element)
+        rq = '%s/attribute/findByName' % (self.endpoint)
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -255,7 +249,7 @@ class Element(object):
     def createFamily(self, payload):
         """ crea una nuova famiglia """
         logger.debug('Creating new family %s' % payload)
-        rq = '%s/family' % (self.ep_element)
+        rq = '%s/family' % (self.endpoint)
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -269,7 +263,7 @@ class Element(object):
         Prende tutte le famiglie.
         """
         logger.debug('Getting all the families')
-        rq = '%s/family' % (self.ep_element)
+        rq = '%s/family' % (self.endpoint)
         r = self.apibot.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -281,7 +275,7 @@ class Element(object):
         Legge la singola famiglia.
         """
         logger.debug(f'Reading family {family_id}')
-        rq = '%s/family/%s' % (self.ep_element, family_id)
+        rq = '%s/family/%s' % (self.endpoint, family_id)
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -293,7 +287,7 @@ class Element(object):
         Update family.
         """
         logger.debug('Updating family %s ...' % family_id)
-        rq = '%s/family/%s' % (self.ep_element, family_id)
+        rq = '%s/family/%s' % (self.endpoint, family_id)
         r = self.apibot.post(rq, json=payload) 
         if 200 != r.status_code:
             parseApiError(r)
@@ -310,7 +304,7 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
         logger.debug('Get family %s' % family_code)
-        rq = '%s/family/findByCode' % (self.ep_element)
+        rq = '%s/family/findByCode' % (self.endpoint)
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -322,7 +316,7 @@ class Element(object):
         Associa categoria a famiglia
         """
         logger.debug(f'Patching family {family_id} ')
-        rq = '%s/family/%s' % (self.ep_element, family_id)
+        rq = '%s/family/%s' % (self.endpoint, family_id)
         try:
             r = self.apibot.patch(rq, json=payload)
         except Exception:
@@ -338,7 +332,7 @@ class Element(object):
         Associa categoria a famiglia
         """
         logger.debug(f'Patching family {family_id} with category {category_id}')
-        rq = '%s/family/%s' % (self.ep_element, family_id)
+        rq = '%s/family/%s' % (self.endpoint, family_id)
         payload = {
             'category_id': category_id
             }
@@ -357,7 +351,7 @@ class Element(object):
         Associa datasheet a famiglia
         """
         logger.debug(f'Pathing family {family_id} with datasheet {datasheet_id}')
-        rq = '%s/family/%s' % (self.ep_element, family_id)
+        rq = '%s/family/%s' % (self.endpoint, family_id)
         payload = {
             'datasheet_id': datasheet_id
             }
@@ -376,7 +370,7 @@ class Element(object):
         Aggiorna cover famiglia. 
         """
         logger.debug('Update family %s cover with file %s' % (family_id, localFile))
-        rq = '%s/family/%s/cover' % (self.ep_element, family_id)
+        rq = '%s/family/%s/cover' % (self.endpoint, family_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
         #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
@@ -396,7 +390,7 @@ class Element(object):
         Aggiorna HQ famiglia. 
         """
         logger.debug('Update family %s hq with file %s' % (family_id, localFile))
-        rq = '%s/family/%s/hq' % (self.ep_element, family_id)
+        rq = '%s/family/%s/hq' % (self.endpoint, family_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
         #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
@@ -417,7 +411,7 @@ class Element(object):
         SUGGEST - USE syncFamilyNorm!
         """
         logger.debug('Attaching norm %s at family %s ...' % (norm_id, family_id))
-        rq = '%s/family/%s/norm' % (self.ep_element, family_id)
+        rq = '%s/family/%s/norm' % (self.endpoint, family_id)
         payload = {
             'norm_id' : norm_id
             }
@@ -433,7 +427,7 @@ class Element(object):
         SUGGEST - USE syncFamilyNorm!
         """
         logger.debug('Attach quality %s at family %s' % (quality_id, family_id))
-        rq = '%s/family/%s/quality' % (self.ep_element, family_id)
+        rq = '%s/family/%s/quality' % (self.endpoint, family_id)
         payload = {
             'quality_id' : quality_id
             }
@@ -452,7 +446,7 @@ class Element(object):
             'feature_id': feature_id,
             'description': description
         }
-        rq = '%s/family/%s/feature' % (self.ep_element, family_id)
+        rq = '%s/family/%s/feature' % (self.endpoint, family_id)
         try:
             r = self.apibot.post(rq, json=payload)
         except Exception:
@@ -468,7 +462,7 @@ class Element(object):
         Add attribute to family.
         """
         logger.debug(f'Attaching attribute {attribute_id} to family {family_id}...')
-        rq = f'{self.ep_element}/family/{family_id}/attribute'
+        rq = f'{self.endpoint}/family/{family_id}/attribute'
         payload = {
             'attribute_id' : attribute_id
             }
@@ -483,7 +477,7 @@ class Element(object):
         Add attribute to sorting
         """
         logger.debug(f'Attaching attribute {attribute_id} to family {family_id} sorting...')
-        rq = f'{self.ep_element}/family/{family_id}/sorting'
+        rq = f'{self.endpoint}/family/{family_id}/sorting'
         payload = {
             'attribute_id' : attribute_id
             }
@@ -499,7 +493,7 @@ class Element(object):
         Crea una nuova feature.
         """
         logger.debug('Creating new feature with name %s' % feature_name)
-        rq = '%s/feature' % (self.ep_element)
+        rq = '%s/feature' % (self.endpoint)
         payload = {
             'name' : feature_name
             }
@@ -518,7 +512,7 @@ class Element(object):
         params = {
             'name' : feature_name
         }
-        rq = '%s/feature/findByName' % (self.ep_element)
+        rq = '%s/feature/findByName' % (self.endpoint)
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             parseApiError(r)
@@ -530,7 +524,7 @@ class Element(object):
     def createCrtable(self, payload):
         """ crea una nuova tabella """
         logger.debug('Creating new crtabel %s' % payload)
-        rq = '%s/crtable' % (self.ep_element)
+        rq = '%s/crtable' % (self.endpoint)
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -544,7 +538,7 @@ class Element(object):
         Legge una tabella dal suo id.
         """
         logger.debug(f'Get crtable {crtable_id}')
-        rq = f'{self.ep_element}/crtable/{crtable_id}'
+        rq = f'{self.endpoint}/crtable/{crtable_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -556,7 +550,7 @@ class Element(object):
         Legge una tabella dal suo slug.
         """
         logger.debug(f'Get crtable slug {slug}')
-        rq = f'{self.ep_element}/crtable/findBySlug'
+        rq = f'{self.endpoint}/crtable/findBySlug'
         r = self.apibot.get(rq, params={
             'slug' : slug
         })
@@ -570,7 +564,7 @@ class Element(object):
         Legge una tabella dal suo name.
         """
         logger.debug(f'Get crtable name {name}')
-        rq = f'{self.ep_element}/crtable/findByName'
+        rq = f'{self.endpoint}/crtable/findByName'
         r = self.apibot.get(rq, params={
             'name' : name
         })
@@ -584,7 +578,7 @@ class Element(object):
     def createCrimping(self, crtable_id:int, payload):
         """ crea nuovo parametro di pinzatura per tabella """
         logger.debug('Creating new crimping %s' % payload)
-        rq = f'{self.ep_element}/crtable/{crtable_id}/crimping'
+        rq = f'{self.endpoint}/crtable/{crtable_id}/crimping'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -598,7 +592,7 @@ class Element(object):
         Legge un parametro dalla tabella pinzatura.
         """
         logger.debug(f'Get crimping {crimping_id} from table {crtable_id}')
-        rq = f'{self.ep_element}/crtable/{crtable_id}/crimping/{crimping_id}'
+        rq = f'{self.endpoint}/crtable/{crtable_id}/crimping/{crimping_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -611,7 +605,7 @@ class Element(object):
         Get hub from name
         """
         logger.debug('Search hub by name %s' % hub_name)
-        rq = f'{self.ep_element}/hub/findByName?name={hub_name}'
+        rq = f'{self.endpoint}/hub/findByName?name={hub_name}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
@@ -624,7 +618,7 @@ class Element(object):
         Create new hub
         """
         logger.debug('Creating new hub with name %s' % hub_name)
-        rq = f'{self.ep_element}/hub'
+        rq = f'{self.endpoint}/hub'
         payload = {'name':hub_name}
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
@@ -639,7 +633,7 @@ class Element(object):
         Crea un categoria.
         """
         logger.debug('Creating new category with name %s at hub %s' % (category_name, hub_id))
-        rq = '%s/category' % (self.ep_element)
+        rq = '%s/category' % (self.endpoint)
         payload = {
             'hub_id': hub_id,
             'name':category_name
@@ -656,7 +650,7 @@ class Element(object):
         Prende categoria da nome.
         """
         logger.debug('Search category by name %s' % category_name)
-        rq = '%s/category/findByName?name=%s' % (self.ep_element, category_name)
+        rq = '%s/category/findByName?name=%s' % (self.endpoint, category_name)
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
@@ -669,7 +663,7 @@ class Element(object):
         Aggiorna cover categoria.
         """
         logger.debug('Update category %s cover with file %s' % (category_id, localFile))
-        rq = '%s/category/%s/cover' % (self.ep_element, category_id)
+        rq = '%s/category/%s/cover' % (self.endpoint, category_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
         try:
@@ -683,50 +677,11 @@ class Element(object):
         _category = json.loads(r.text)        
         return _category
 
-    #datasheet
-    def createDatasheet(self, payload):
-        """
-        Create new datasheet.
-        """
-        logger.debug('Creating datasheet %s' % payload)
-        rq = '%s/datasheet' % (self.ep_element)
-        r = self.apibot.post(rq, json=payload)
-        if 201 != r.status_code:
-            parseApiError(r)
-            return False
-        return json.loads(r.text)
-
-    def getDatasheetByName(self, datasheet_name:str):
-        """ 
-        Prende griglia da nome.
-        """
-        logger.debug('Search datasheet by name %s' % datasheet_name)
-        rq = '%s/datasheet/findByName?name=%s' % (self.ep_element, datasheet_name)
-        r = self.apibot.get(rq)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        datasheet = json.loads(r.text)
-        return datasheet
-
-    def updateDatasheet(self, datasheet_id:int, payload):
-        """
-        Update datasheet.
-        """
-        logger.debug(f'Updating datasheet {datasheet_id}')
-        rq = '%s/datasheet/%s' % (self.ep_element, datasheet_id)
-        r = self.apibot.post(rq, json=payload)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        datasheet = json.loads(r.text)
-        return datasheet
-
     #catalog
     def getCatalog(self, catalog_id:int, params=None):
         """ Get catalog by ID """
         logger.debug(f'Get catalog {catalog_id}')
-        rq = f'{self.ep_element}/catalog/{catalog_id}'
+        rq = f'{self.endpoint}/catalog/{catalog_id}'
         logger.debug(rq)
         r = self.apibot.get(rq, params=params)
         logger.debug(r)
@@ -738,7 +693,7 @@ class Element(object):
     def getTree(self, catalog_id:int, tree_id:int, params=None):
         """ Get catalog tree by ID """
         logger.debug(f'Get catalog tree {catalog_id}')
-        rq = f'{self.ep_element}/catalog/{catalog_id}/tree/{tree_id}'
+        rq = f'{self.endpoint}/catalog/{catalog_id}/tree/{tree_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -748,7 +703,7 @@ class Element(object):
     def getTreeLeaves(self, catalog_id:int, tree_id:int, params=None):
         """ Get catalog tree leaves """
         logger.debug(f'Get catalog tree {catalog_id}')
-        rq = f'{self.ep_element}/leaf'
+        rq = f'{self.endpoint}/leaf'
         params = {
             'tree': tree_id
         }
@@ -761,50 +716,9 @@ class Element(object):
     def getTreeLeaf(self, catalog_id:int, tree_id:int, leaf_id:int, params=None):
         """ Get catalog tree leaf ID """
         logger.debug(f'Get catalog tree {catalog_id}')
-        rq = f'{self.ep_element}/leaf/{leaf_id}'
+        rq = f'{self.endpoint}/leaf/{leaf_id}'
         r = self.apibot.get(rq, params=params)
         if 200 != r.status_code:
             return False
         leaf = json.loads(r.text)
         return leaf       
-
-    #unit of measure
-    def getUoms(self, query=None):
-        """Get all uoms."""
-        logger.debug('Getting all unit of measure...')
-        rq = f'{self.ep_element}/unitofmeasure'
-        r = self.apibot.get(rq, params=query)
-        if 200 != r.status_code:
-            return False
-        uoms = json.loads(r.text)
-        return uoms
-
-    def getUom(self, uom_id:int, query=None):
-        """
-        Leggo uom da id.
-        """
-        logger.debug(f'Reading family {uom_id}...')
-        rq = f'{self.ep_element}/unitofmeasure/{uom_id}'
-        r = self.apibot.get(rq, params=query)
-        if 200 != r.status_code:
-            return False
-        uom = json.loads(r.text)
-        return uom
-
-    def getUomFromCode(self, code:str, query=None):
-        """
-        Leggo uom da code.
-        """
-        logger.debug(f'Reading uom code {code}...')
-        params = {
-            'code': code
-            }
-        if query:
-            new_params = dict(item.split("=") for item in query.split('&'))
-            params = {**params, **new_params}     
-        rq = f'{self.ep_element}/unitofmeasure/findByCode'
-        r = self.apibot.get(rq, params=params)
-        if 200 != r.status_code:
-            return False
-        uom = json.loads(r.text)
-        return uom        

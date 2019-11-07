@@ -10,35 +10,27 @@ __author__ = "Davide Pellegrino"
 __version__ = "1.2.0"
 __date__ = "2019-01-19"
 
-import json
-import logging
-import time
+import json, logging
 
 from agbot.session import Session, parseApiError
-from dotenv import load_dotenv
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.DEBUG)
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-logger.addHandler(c_handler)
+logger = logging.getLogger()
 
 class Sqm(object):
     """
     SQM Simple Quality Management core class .
     """
     
+    endpoint = None
+    
     def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Sqm')
-        session = Session()
+        logger.debug('Init SQM SDK')
+        session = Session(profile_name)
         self.apibot = session.apibot
-        self.ep_sqm = session.ep_sqm
+        self.endpoint = f'{session.ep_agapi}/sqm'
 
 
     def createNorm(self, normName:str):
@@ -46,7 +38,7 @@ class Sqm(object):
         Create new norm.
         """
         logger.debug('Creating norm %s' % normName)
-        rq = '%s/norm' % (self.ep_sqm)
+        rq = '%s/norm' % (self.endpoint)
         payload = {'name':normName}
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
@@ -60,7 +52,7 @@ class Sqm(object):
         Prende la norm dal nome.
         """
         logger.debug('Get norm by name %s' % normName)
-        rq = '%s/norm/findByName' % (self.ep_sqm)
+        rq = '%s/norm/findByName' % (self.endpoint)
         payload = {'name':normName}
         r = self.apibot.get(rq, params=payload)
         if 200 != r.status_code:

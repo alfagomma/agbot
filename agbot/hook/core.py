@@ -13,14 +13,7 @@ __date__ = "2019-06-11"
 import json, logging, time
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.WARNING)
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-logger.addHandler(c_handler)
+logger = logging.getLogger()
 
 class Hook(object):
     """

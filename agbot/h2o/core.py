@@ -10,32 +10,27 @@ __author__ = "Davide Pellegrino"
 __version__ = "1.1.4"
 __date__ = "2019-05-22"
 
-import json
-import logging
+import json, logging
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.WARNING)
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-logger.addHandler(c_handler)
+logger = logging.getLogger()
 
 class H2o(object):
     """
     H2o core class .
     """
 
+    endpoint = None
+
     def __init__(self, profile_name=None):
         """
-        Initialize main class with this and that.
+        Initialize main class.
         """
-        logger.debug('Init H2o')
-        session = Session()
+        logger.debug('Init H2o SDK')
+        session = Session(profile_name)
         self.apibot = session.apibot
-        self.ep_h2o = session.ep_h2o
+        self.endpoint = f'{session.ep_agapi}/h2o'
+
 
     #order
     def createOrder(self, payload):
@@ -43,7 +38,7 @@ class H2o(object):
         Create new order
         """
         logger.debug('Creating order %s' % payload)
-        rq = f'{self.ep_h2o}/order'
+        rq = f'{self.endpoint}/order'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -57,7 +52,7 @@ class H2o(object):
         Get order by id
         """
         logger.debug(f'Reading order {order_id}..')
-        rq = f'{self.ep_h2o}/order/{order_id}'
+        rq = f'{self.endpoint}/order/{order_id}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
@@ -70,7 +65,7 @@ class H2o(object):
         Read order from erp external ID.
         """
         logger.debug(f'Reading order {order_id} for erp {erp_id}')
-        rq = f'{self.ep_h2o}/order/findByErpId'
+        rq = f'{self.endpoint}/order/findByErpId'
         payload = {
             'erp_id': erp_id, 
             'ext_id': order_id 
@@ -90,7 +85,7 @@ class H2o(object):
         """
         logger.debug('Init creating customer...')
         print(payload)
-        rq = f'{self.ep_h2o}/customer'
+        rq = f'{self.endpoint}/customer'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -104,7 +99,7 @@ class H2o(object):
         Get customer by id.
         """
         logger.debug(f'Reading customer {customer_id}...')        
-        rq = f'{self.ep_h2o}/customer/{customer_id}'
+        rq = f'{self.endpoint}/customer/{customer_id}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
@@ -117,7 +112,7 @@ class H2o(object):
         Read customer from erp external ID
         """
         logger.debug(f'Reading customer {customer_id} for erp {erp_id}')
-        rq = f'{self.ep_h2o}/customer/findByErpId'
+        rq = f'{self.endpoint}/customer/findByErpId'
         payload = {
             'erp_id': erp_id, 
             'ext_id': customer_id 
@@ -135,7 +130,7 @@ class H2o(object):
         Read customer from vat code.
         """
         logger.debug(f'Reading customer from vat code {vatcode}')
-        rq = f'{self.ep_h2o}/customer/findByVatcode'
+        rq = f'{self.endpoint}/customer/findByVatcode'
         payload = {
             'vatcode': vatcode
             }
@@ -152,7 +147,7 @@ class H2o(object):
         Read customer from tax code.
         """
         logger.debug(f'Reading customer from tax code {taxcode}')
-        rq = f'{self.ep_h2o}/customer/findByTaxcode'
+        rq = f'{self.endpoint}/customer/findByTaxcode'
         payload = {
             'taxcode': taxcode
             }
@@ -169,7 +164,7 @@ class H2o(object):
         Update customer data.
         """
         logger.debug(f'Updating customer {customer_id}...')
-        rq = f'{self.ep_h2o}/customer/{customer_id}'
+        rq = f'{self.endpoint}/customer/{customer_id}'
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -183,7 +178,7 @@ class H2o(object):
         Update customer ERP Xrefs.
         """
         logger.debug(f'Init creating customer {customer_id} ERP xref ...')
-        rq = f'{self.ep_h2o}/customer/{customer_id}/xerp'
+        rq = f'{self.endpoint}/customer/{customer_id}/xerp'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -194,7 +189,7 @@ class H2o(object):
         Update customer address.
         """
         logger.debug(f'Init updating {customer_id} address ...')
-        rq = f'{self.ep_h2o}/customer/{customer_id}/address'
+        rq = f'{self.endpoint}/customer/{customer_id}/address'
         r = self.apibot.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
@@ -206,7 +201,7 @@ class H2o(object):
         Create new competitor.
         """
         logger.debug('Init creating competitor...')
-        rq = f'{self.ep_h2o}/competitor'
+        rq = f'{self.endpoint}/competitor'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -219,7 +214,7 @@ class H2o(object):
         Get competitor by id.
         """
         logger.debug(f'Reading competitor {competitor_id}...')        
-        rq = f'{self.ep_h2o}/competitor/{competitor_id}'
+        rq = f'{self.endpoint}/competitor/{competitor_id}'
         r = self.apibot.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
