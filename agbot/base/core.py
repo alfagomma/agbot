@@ -19,7 +19,6 @@ class Base(object):
     """
     AGCloud BASE Data core class .
     """
-    endpoint = None
 
     def __init__(self, profile_name='default'):
         """
@@ -27,8 +26,8 @@ class Base(object):
         """
         logger.debug('Init Base SDK')
         session = Session(profile_name)
-        self.apibot = session.apibot
-        self.endpoint = f'{session.ep_agapi}'
+        self.agent = session.create()
+        self.host = f'{session.agapi_host}'
 
     #erp
     def getErp(self, erp_id:int, params=None):
@@ -36,8 +35,8 @@ class Base(object):
         Get ERP data.
         """
         logger.debug(f'Get erp {erp_id}')
-        rq = f'{self.endpoint}/erp/{erp_id}'
-        r = self.apibot.get(rq, params=params)
+        rq = f'{self.host}/erp/{erp_id}'
+        r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         erp = json.loads(r.text)
@@ -47,8 +46,8 @@ class Base(object):
     def getUoms(self, query=None):
         """Get all uoms."""
         logger.debug('Getting all unit of measure...')
-        rq = f'{self.endpoint}/unitofmeasure'
-        r = self.apibot.get(rq, params=query)
+        rq = f'{self.host}/unitofmeasure'
+        r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uoms = json.loads(r.text)
@@ -59,8 +58,8 @@ class Base(object):
         Leggo uom da id.
         """
         logger.debug(f'Reading family {uom_id}...')
-        rq = f'{self.endpoint}/unitofmeasure/{uom_id}'
-        r = self.apibot.get(rq, params=query)
+        rq = f'{self.host}/unitofmeasure/{uom_id}'
+        r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)
@@ -77,8 +76,8 @@ class Base(object):
         if query:
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
-        rq = f'{self.endpoint}/unitofmeasure/findByCode'
-        r = self.apibot.get(rq, params=params)
+        rq = f'{self.host}/unitofmeasure/findByCode'
+        r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)

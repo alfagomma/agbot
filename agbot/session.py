@@ -28,9 +28,9 @@ class Session(object):
     agcloud_id = None
     agcloud_key = None
     apibot = None
-    ep_agapi = None
-    ep_aggraph = None
-    ep_aghook = None
+    agapi_host = None
+    aggraph_host = None
+    aghook_host = None
     token_name = 'ag:agbot'
 
     def __init__(self, profile_name=None):
@@ -45,8 +45,9 @@ class Session(object):
         if not config.has_section(profile_name):
             logger.error(f'Unknow {profile_name} configs!')
             exit(1)
-        self.ep_agapi = config.get(profile_name, 'ep_agapi')
-        self.ep_aghook = config.get(profile_name, 'ep_aghook')
+        self.agapi_host = config.get(profile_name, 'agapi_host')
+        self.aghook_host = config.get(profile_name, 'aghook_host')
+        self.aggraph_host = config.get(profile_name, 'aggraph_host')
 
         ## Credentials
         credentials_path = os.path.expanduser('~/.agcloud/credentials')
@@ -57,47 +58,47 @@ class Session(object):
             exit(1)
         self.agcloud_id = credentials.get(profile_name, 'agcloud_id')
         self.agcloud_key = credentials.get(profile_name, 'agcloud_key')
-
-        logger.info('ep_agapi is %s' % self.ep_agapi)
-        logger.info('ep_aghook is %s' % self.ep_aghook)  
-
         redis_host = config.get(profile_name, 'redis_host') if config.has_option(profile_name, 'redis_host') else '127.0.0.1'
         redis_pass = credentials.get(profile_name, 'redis_password') if credentials.has_option(profile_name, 'redis_password') else None
-
         self.cache = Redis(host=redis_host, password=redis_pass, decode_responses=True)
-        self.apibot = requests.Session()
-        self.__apibotSession()
+        logger.info('agapi_host is %s' % self.agapi_host)
+        logger.info('aghook_host is %s' % self.aghook_host)  
 
-    def getToken(self):
+    def create(self, auth=True):
+        """Create a new request session."""
+        logger.debug(f'Creating new request session {auth}...')
+        rq = requests.Session()
+        rq.headers.update({'user-agent': 'AGBot-Session'})
+        if not auth:
+            logger.debug('Session without auth')
+            return rq
+        # Auth agent
+        token = self.__getToken(rq)
+        try:
+            rq.headers.update({
+                'x-uid': token['uid'],
+                'x-sid': token['sid'],
+                'x-csrf': token['csrf']
+                })
+        except Exception:
+            logger.error("Fatal error on apibot session", exc_info=True)
+        return rq
+
+    def __getToken(self, rq):
         """ Read session token. If not exists, it creates it. """
         logger.debug('Init reading token..')
         token = self.cache.hgetall(self.token_name)
         if not bool(token):
-            token = self.__createToken(self.token_name)
+            token = self.__createToken(rq)
         return token
 
-    def __apibotSession(self):
-        """Read token session and update apibot headers."""
-        logger.debug('Init session boot...')
-        token = self.getToken()
-        try:
-            self.apibot.headers.update({
-                'user-agent': 'AGBot-Session',
-                'x-uid': token['uid'],
-                'x-sid': token['sid'],
-                'x-csrf': token['csrf']            
-                })
-        except Exception:
-            logger.error("Fatal error on apibot session", exc_info=True)
-        return
-
-    def __createToken(self, token_name):
+    def __createToken(self, rq):
         """ Create new session token. """
-        logger.debug(f'Init new session token {token_name}...')
-        rqSid = f'{self.ep_agapi}/session'
-        rqCsrf = f'{self.ep_agapi}/session/csrf'
-        rqUid = f'{self.ep_agapi}/auth/token'
-        rUid = self.apibot.post(rqUid, auth=(self.agcloud_id, self.agcloud_key))
+        logger.debug(f'Init new session token {self.token_name}...')
+        rqSid = f'{self.agapi_host}/session'
+        rqCsrf = f'{self.agapi_host}/session/csrf'
+        rqUid = f'{self.agapi_host}/auth/token'
+        rUid = rq.post(rqUid, auth=(self.agcloud_id, self.agcloud_key))
         if 200 != rUid.status_code:
             parseApiError(rUid)
             return False
@@ -105,27 +106,26 @@ class Session(object):
         tokenExpire = int(time.time()) + responseUid['expires_in']
 
         uid = responseUid['access_token']
-        rSid = self.apibot.post(rqSid)
+        rSid = rq.post(rqSid)
         if 200 != rSid.status_code:
             parseApiError(rSid)
             return False  
         responseSid = json.loads(rSid.text) 
         sid = responseSid['token']
-        rCsrf = self.apibot.post(rqCsrf)
+        rCsrf = rq.post(rqCsrf)
         if 200 != rCsrf.status_code:
-                parseApiError(rCsrf)
-                return False
+            parseApiError(rCsrf)
+            return False
         responseCsrf = json.loads(rCsrf.text)
         csrf = responseCsrf['csrfToken']
-        agbotsession = {
+        agentSession = {
             'uid' : uid,
             'sid' : sid,
             'csrf' : csrf
         }
-        self.cache.hmset(token_name, agbotsession)
-        self.cache.expireat(token_name, tokenExpire)
-        return agbotsession
-
+        self.cache.hmset(self.token_name, agentSession)
+        self.cache.expireat(self.token_name, tokenExpire)
+        return agentSession
 
 def parseApiError(response):
         """ stampa errori api """

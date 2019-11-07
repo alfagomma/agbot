@@ -3,7 +3,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Sqm SDK
+SQM SDK
 """
 
 __author__ = "Davide Pellegrino"
@@ -21,16 +21,14 @@ class Sqm(object):
     SQM Simple Quality Management core class .
     """
     
-    endpoint = None
-    
-    def __init__(self, profile_name=None):
+    def __init__(self, profile_name='default'):
         """
         Initialize main class with this and that.
         """
         logger.debug('Init SQM SDK')
         session = Session(profile_name)
-        self.apibot = session.apibot
-        self.endpoint = f'{session.ep_agapi}/sqm'
+        self.agent = session.create()
+        self.host = f'{session.agapi_host}/sqm'
 
 
     def createNorm(self, normName:str):
@@ -38,9 +36,9 @@ class Sqm(object):
         Create new norm.
         """
         logger.debug('Creating norm %s' % normName)
-        rq = '%s/norm' % (self.endpoint)
+        rq = '%s/norm' % (self.host)
         payload = {'name':normName}
-        r = self.apibot.post(rq, json=payload)
+        r = self.agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -52,9 +50,9 @@ class Sqm(object):
         Prende la norm dal nome.
         """
         logger.debug('Get norm by name %s' % normName)
-        rq = '%s/norm/findByName' % (self.endpoint)
+        rq = '%s/norm/findByName' % (self.host)
         payload = {'name':normName}
-        r = self.apibot.get(rq, params=payload)
+        r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
