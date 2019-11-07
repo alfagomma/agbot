@@ -13,28 +13,21 @@ __date__ = "2019-06-11"
 import json, logging, time
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-c_handler = logging.StreamHandler()
-c_handler.setLevel(logging.WARNING)
-# Create formatters and add it to handlers
-c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-c_handler.setFormatter(c_format)
-logger.addHandler(c_handler)
+logger = logging.getLogger()
 
 class Hook(object):
     """
     Hook core class .
     """
 
-    def __init__(self, profile_name=None):
+    def __init__(self, profile_name='default'):
         """
         Initialize main class with this and that.
         """
         logger.debug('Init Hook')
         session = Session(profile_name)
-        self.apibot = session.apibot
-        self.ep_hook = session.ep_hook
+        self.apibot = session.create()
+        self.host = session.aghook_host
 
     #ERP
     def erp_sap_material(self, payload):
@@ -42,7 +35,7 @@ class Hook(object):
         Call erp sap worker queue
         """
         logger.debug(f'Calling erp sap queue')
-        rq = f'{self.ep_hook}/erp/sap/material'
+        rq = f'{self.host}/erp/sap/material'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             return False
@@ -53,7 +46,7 @@ class Hook(object):
         Call erp sap worker queue
         """
         logger.debug(f'Calling erp sap queue')
-        rq = f'{self.ep_hook}/erp/sap/customer'
+        rq = f'{self.host}/erp/sap/customer'
         r = self.apibot.post(rq, json=payload)
         if 201 != r.status_code:
             return False

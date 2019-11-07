@@ -1,16 +1,23 @@
-AGBot Beta2
+AGBot Beta3
 ====================
 
-NOTE DI VERSIONE
+Official AGCloud Python library
+
+
+NOTE
 -----------
 
-- SDK AGCloud API
-
------------
+- Update API endpoints version
+- Session create (with auth or not)
+- New cache utility (local)
 
 
 
 TODO
 -----------
 
-- [ ] 
+- [ ] Local cache to redis ?
+- [ ] Graph endpoint
+- [ ] H2o improvements
+- [ ] Element crimping table
+- [ ] Handle errors response
