@@ -12,14 +12,7 @@ import configparser
 from redis import Redis
 from sys import exit
 
-logger = logging.getLogger(__name__)
-# logger.setLevel(logging.DEBUG)
-# c_handler = logging.StreamHandler()
-# c_handler.setLevel(logging.WARNING)
-# # Create formatters and add it to handlers
-# c_format = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-# c_handler.setFormatter(c_format)
-# logger.addHandler(c_handler)
+logger = logging.getLogger()
 
 class Session(object):
     """
@@ -135,11 +128,11 @@ def parseApiError(response):
         except Exception:
             # Add handlers to the logger
             logger.error('Not jsonable', exc_info=True)
-        problem = response.text
+            return False
         msg = f'status {status}'
         if 'title' in problem:
             msg+=f" / {problem['title']}"
         if 'errors' in problem:
             for k,v in problem['errors'].items():
-                msg+=f" -{k}:{v}" 
+                msg+=f'\n\t -{k}:{v}'
         logger.warning(msg)

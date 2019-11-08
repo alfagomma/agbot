@@ -26,7 +26,7 @@ class Hook(object):
         """
         logger.debug('Init Hook')
         session = Session(profile_name)
-        self.apibot = session.create()
+        self.agent = session.create()
         self.host = session.aghook_host
 
     #ERP
@@ -36,19 +36,10 @@ class Hook(object):
         """
         logger.debug(f'Calling erp sap queue')
         rq = f'{self.host}/erp/sap/material'
-        r = self.apibot.post(rq, json=payload)
+        r = self.agent.post(rq, json=payload)
         if 201 != r.status_code:
+            parseApiError(r)
             return False
         return True
-
-    def erp_sap_customer(self, payload):
-        """
-        Call erp sap worker queue
-        """
-        logger.debug(f'Calling erp sap queue')
-        rq = f'{self.host}/erp/sap/customer'
-        r = self.apibot.post(rq, json=payload)
-        if 201 != r.status_code:
-            return False
-        return True        
+   
     
