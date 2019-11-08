@@ -28,7 +28,10 @@ setup(
     author='Agenziasmart',
     scripts=[],
     packages=find_packages(exclude=['tests*']),
-    install_requires=requires,
+    install_requires=[
+        'requests',
+        'redis'
+    ],
     license="Apache License 2.0",
     classifiers=[
         'Development Status :: 5 - Production/Stable',
