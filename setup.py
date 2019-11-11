@@ -17,7 +17,7 @@ def get_version():
 
 setup(
     name='agbot',
-    version=get_version(),
+    version="2.0.2",
     description='The AGBot SDK for Python',
     long_description=open('README.rst').read(),
     author='Agenziasmart',
