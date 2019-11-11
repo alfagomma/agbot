@@ -21,8 +21,7 @@ setup(
     description='The AGBot SDK for Python',
     long_description=open('README.rst').read(),
     author='Agenziasmart',
-    scripts=[],
-    packages=find_packages(exclude=['tests*']),
+    scripts=['hello.py'],
     install_requires=[
         'requests',
         'redis'
