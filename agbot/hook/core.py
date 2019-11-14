@@ -27,7 +27,7 @@ class Hook(object):
         logger.debug('Init Hook')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = session.aghook_host
+        self.host = session.getHookHost()
 
     #ERP
     def erp_sap_material(self, payload):

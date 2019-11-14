@@ -26,7 +26,7 @@ class Element(object):
         logger.debug('Init Element SDK')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = f'{session.agapi_host}/element'
+        self.host = session.getAgapiHost()
 
     #item
     def getItem(self, item_id:int, params=None):

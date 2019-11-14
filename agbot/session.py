@@ -6,10 +6,7 @@
 Session
 """
 
-import os, json, time, logging
-import requests
-import configparser
-from redis import Redis
+import os, json, time, logging, requests, configparser
 from sys import exit
 
 logger = logging.getLogger()
@@ -18,19 +15,15 @@ class Session(object):
     """
     AGBot Session class .
     """
-    agcloud_id = None
-    agcloud_key = None
-    apibot = None
-    agapi_host = None
-    aggraph_host = None
-    aghook_host = None
-    token_name = 'ag:agbot'
+    tokenName = 'ag:agbot'
 
     def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """
-        logger.debug(f'Init session with {profile_name} profie..')
+        if not profile_name:
+            profile_name = 'default'        
+        logger.info(f'Init session with {profile_name} profie..')
         ## Config
         config_path = os.path.expanduser('~/.agcloud/config')
         config = configparser.ConfigParser()
@@ -38,10 +31,6 @@ class Session(object):
         if not config.has_section(profile_name):
             logger.error(f'Unknow {profile_name} configs!')
             exit(1)
-        self.agapi_host = config.get(profile_name, 'agapi_host')
-        self.aghook_host = config.get(profile_name, 'aghook_host')
-        self.aggraph_host = config.get(profile_name, 'aggraph_host')
-
         ## Credentials
         credentials_path = os.path.expanduser('~/.agcloud/credentials')
         credentials = configparser.ConfigParser()
@@ -49,17 +38,15 @@ class Session(object):
         if not credentials.has_section(profile_name):
             logger.error(f'Unknow {profile_name} credentials!')
             exit(1)
-        self.agcloud_id = credentials.get(profile_name, 'agcloud_id')
-        self.agcloud_key = credentials.get(profile_name, 'agcloud_key')
-        redis_host = config.get(profile_name, 'redis_host') if config.has_option(profile_name, 'redis_host') else '127.0.0.1'
-        redis_pass = credentials.get(profile_name, 'redis_password') if credentials.has_option(profile_name, 'redis_password') else None
-        self.cache = Redis(host=redis_host, password=redis_pass, decode_responses=True)
-        logger.info('agapi_host is %s' % self.agapi_host)
-        logger.info('aghook_host is %s' % self.aghook_host)  
+        self.profile = profile_name
+        self.config = config
+        self.credentials = credentials
+        self.cache = self.__getCache()
+        
 
     def create(self, auth=True):
         """Create a new request session."""
-        logger.debug(f'Creating new request session {auth}...')
+        logger.info(f'Creating new request session {auth}...')
         rq = requests.Session()
         rq.headers.update({'user-agent': 'AGBot-Session'})
         if not auth:
@@ -77,21 +64,42 @@ class Session(object):
             logger.error("Fatal error on apibot session", exc_info=True)
         return rq
 
+    def getAgapiHost(self):
+        """ return ag api host"""
+        logger.debug('Reading ag api host...')
+        agapiHost = self.config.get(profile_name, 'agapi_host')
+        return agapiHost
+
+    def getGraphHost(self):
+        """ return ag graph host"""
+        logger.debug('Reading ag graph host...')
+        graphHost = self.config.get(profile_name, 'aggraph_host')
+        return graphHost
+
+    def getHookHost(self):
+        """ return ag hook host"""
+        logger.debug('Reading ag hook host...')
+        hookHost = self.config.get(profile_name, 'aghook_host')
+        return hookHost        
+
     def __getToken(self, rq):
         """ Read session token. If not exists, it creates it. """
-        logger.debug('Init reading token..')
-        token = self.cache.hgetall(self.token_name)
+        logger.info('Init reading token..')
+        token = self.cache.hgetall(self.tokenName)
         if not bool(token):
             token = self.__createToken(rq)
         return token
 
     def __createToken(self, rq):
         """ Create new session token. """
-        logger.debug(f'Init new session token {self.token_name}...')
-        rqSid = f'{self.agapi_host}/session'
-        rqCsrf = f'{self.agapi_host}/session/csrf'
-        rqUid = f'{self.agapi_host}/auth/token'
-        rUid = rq.post(rqUid, auth=(self.agcloud_id, self.agcloud_key))
+        logger.info(f'Init new session token ...')
+        agcloud_id = self.credentials.get(self.profile, 'agcloud_id')
+        agcloud_key = self.credentials.get(self.profile, 'agcloud_key')
+        host = self.agapi_host()
+        rqSid = f'{host}/session'
+        rqCsrf = f'{host}/session/csrf'
+        rqUid = f'{host}/auth/token'
+        rUid = rq.post(rqUid, auth=(agcloud_id, agcloud_key))
         if 200 != rUid.status_code:
             parseApiError(rUid)
             return False
@@ -111,14 +119,23 @@ class Session(object):
             return False
         responseCsrf = json.loads(rCsrf.text)
         csrf = responseCsrf['csrfToken']
-        agentSession = {
+        token = {
             'uid' : uid,
             'sid' : sid,
             'csrf' : csrf
         }
-        self.cache.hmset(self.token_name, agentSession)
-        self.cache.expireat(self.token_name, tokenExpire)
-        return agentSession
+        self.cache.hmset(self.tokenName, token)
+        self.cache.expireat(self.tokenName, tokenExpire)
+        return token
+
+    def __getCache(self):
+        """cache """
+        logger.info('Creating cache...')
+        from redis import Redis
+        redis_host = self.config.get(self.profile, 'redis_host') if self.config.has_option(self.profile, 'redis_host') else '127.0.0.1'
+        redis_pass = self.credentials.get(self.profile, 'redis_password') if self.credentials.has_option(self.profile, 'redis_password') else None
+        cache = Redis(host=redis_host, password=redis_pass, decode_responses=True)
+        return cache
 
 def parseApiError(response):
         """ stampa errori api """

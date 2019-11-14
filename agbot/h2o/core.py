@@ -27,7 +27,7 @@ class H2o(object):
         logger.debug('Init H2o SDK')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = f'{session.agapi_host}/h2o'
+        self.host = f'{session.getAgapiHost()}/h2o'
 
     #order
     def createOrder(self, payload):

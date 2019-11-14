@@ -25,7 +25,7 @@ class Graph(object):
         logger.debug('Init Graph SDK')
         session = Session(profile_name)
         self.agent = session.create(False)
-        self.host = session.aggraph_host
+        self.host = session.getGraphHost()
 
     def get_language(self, language_id:int, params=None):
         """

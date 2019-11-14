@@ -27,7 +27,7 @@ class Base(object):
         logger.debug('Init Base SDK')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = f'{session.agapi_host}'
+        self.host = session.getAgapiHost()
 
     #erp
     def getErp(self, erp_id:int, params=None):

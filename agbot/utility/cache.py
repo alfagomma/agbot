@@ -16,14 +16,14 @@ class Cache(object):
 
     def __init__(self):
         """Init new Cache utility."""
-        logger.debug(f'Init cache path {self.cachePath}..')
+        logger.info(f'Init cache path {self.cachePath}..')
         if not os.path.exists(self.cachePath):
             logger.debug(f'Creating cache path {self.cachePath}')
             os.makedirs(self.cachePath)
 
     def read(self, name):
         """ Recupero il dato in cache. """
-        logger.debug(f'Init read cache {name}...')        
+        logger.info(f'Init read cache {name}...')        
         cachekey = self.__createCacheKey(name)
         if not self.__isCache(cachekey):
             logger.debug(f'{cachekey} is not cached!')
@@ -41,7 +41,7 @@ class Cache(object):
         """
         Salva il dato in cache.
         """
-        logger.debug(f'Creating {name} cache..')
+        logger.info(f'Creating {name} cache..')
         cachekey = self.__createCacheKey(name)
         try:
             f = open(f'{self.cachePath}/{cachekey}', 'w')
@@ -58,7 +58,7 @@ class Cache(object):
         """
         Elimino tutti i file di cache.
         """
-        logger.debug('Init cleaning cache dir ...')
+        logger.info('Init cleaning cache dir ...')
         filelist = [ f for f in os.listdir(self.cachePath) ]
         for f in filelist:
             os.remove(os.path.join(self.cachePath, f))

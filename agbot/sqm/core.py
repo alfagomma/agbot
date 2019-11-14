@@ -28,7 +28,7 @@ class Sqm(object):
         logger.debug('Init SQM SDK')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = f'{session.agapi_host}/sqm'
+        self.host = f'{session.getAgapiHost()}/sqm'
 
 
     def createNorm(self, normName:str):
