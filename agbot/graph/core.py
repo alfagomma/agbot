@@ -18,7 +18,7 @@ class Graph(object):
     """
     Graph Open Data core class .
     """
-    def __init__(self, profile_name='default'):
+    def __init__(self, profile_name=False):
         """
         Initialize main class with this and that.
         """

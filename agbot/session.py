@@ -17,7 +17,7 @@ class Session(object):
     """
     tokenName = 'ag:agbot'
 
-    def __init__(self, profile_name=None):
+    def __init__(self, profile_name=False):
         """
         Initialize main class with this and that.
         """

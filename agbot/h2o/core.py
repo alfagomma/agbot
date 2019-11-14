@@ -20,7 +20,7 @@ class H2o(object):
     H2o core class .
     """
 
-    def __init__(self, profile_name='default'):
+    def __init__(self, profile_name=False):
         """
         Initialize main class.
         """
