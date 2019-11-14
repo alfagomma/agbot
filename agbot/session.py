@@ -23,7 +23,7 @@ class Session(object):
         """
         if not profile_name:
             profile_name = 'default'        
-        logger.info(f'Init session with {profile_name} profie..')
+        logger.info(f'Init agbot session with {profile_name} profie..')
         ## Config
         config_path = os.path.expanduser('~/.agcloud/config')
         config = configparser.ConfigParser()
