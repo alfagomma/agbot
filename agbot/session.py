@@ -67,19 +67,19 @@ class Session(object):
     def getAgapiHost(self):
         """ return ag api host"""
         logger.debug('Reading ag api host...')
-        agapiHost = self.config.get(profile_name, 'agapi_host')
+        agapiHost = self.config.get(self.profile, 'agapi_host')
         return agapiHost
 
     def getGraphHost(self):
         """ return ag graph host"""
         logger.debug('Reading ag graph host...')
-        graphHost = self.config.get(profile_name, 'aggraph_host')
+        graphHost = self.config.get(self.profile, 'aggraph_host')
         return graphHost
 
     def getHookHost(self):
         """ return ag hook host"""
         logger.debug('Reading ag hook host...')
-        hookHost = self.config.get(profile_name, 'aghook_host')
+        hookHost = self.config.get(self.profile, 'aghook_host')
         return hookHost        
 
     def __getToken(self, rq):
