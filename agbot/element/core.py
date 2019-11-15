@@ -79,7 +79,6 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}        
         rq = '%s/item/findByExtId' % (self.host)
-        print('ciao', self.host, rq)
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
