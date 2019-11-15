@@ -6,7 +6,8 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-agbot = {editable = true,path = "."}
+requests = "*"
+redis = "*"
 
 [requires]
 python_version = "3.6"
