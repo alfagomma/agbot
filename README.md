@@ -1,4 +1,4 @@
-AGBot Beta3
+AGBot V2.0.5
 ====================
 
 Official AGCloud Python library

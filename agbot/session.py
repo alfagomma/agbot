@@ -95,7 +95,7 @@ class Session(object):
         logger.info(f'Init new session token ...')
         agcloud_id = self.credentials.get(self.profile, 'agcloud_id')
         agcloud_key = self.credentials.get(self.profile, 'agcloud_key')
-        host = self.agapi_host()
+        host = self.getAgapiHost()
         rqSid = f'{host}/session'
         rqCsrf = f'{host}/session/csrf'
         rqUid = f'{host}/auth/token'
