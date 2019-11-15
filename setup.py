@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 """
 distutils/setuptools install script.
@@ -21,7 +22,8 @@ setup(
     description='The AGBot SDK for Python',
     long_description=open('README.rst').read(),
     author='Agenziasmart',
-    #scripts=['scripts/hello.py'],
+    scripts=[],
+    packages=find_packages(exclude=['tests*']),
     install_requires=[
         'requests',
         'redis'
