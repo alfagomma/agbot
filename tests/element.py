@@ -23,6 +23,8 @@ def test():
     el = Element()
     items = el.getItems('take=2')
     logger.info(items)
+    findfrom=el.getItemFromExt_id(2012771)
+    logger.info(findfrom)
 
 if __name__ == '__main__':
     """ Do Test """  

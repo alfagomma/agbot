@@ -26,7 +26,7 @@ class Element(object):
         logger.debug('Init Element SDK')
         session = Session(profile_name)
         self.agent = session.create()
-        self.host = session.getAgapiHost()
+        self.host = f'{session.getAgapiHost()}/element'
 
     #item
     def getItem(self, item_id:int, params=None):
@@ -79,6 +79,7 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}        
         rq = '%s/item/findByExtId' % (self.host)
+        print('ciao', self.host, rq)
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
