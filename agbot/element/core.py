@@ -166,19 +166,6 @@ class Element(object):
         logger.info(f'Sync item {item_id} norms complete')              
         return True
 
-    def syncItemCatalogs(self, item_id:int, payload):
-        """
-        Sync item catalogs.
-        """
-        logger.debug('Sync item %s catalogs %s' % (item_id, payload))
-        rq = '%s/item/%s/catalog/sync' % (self.host, item_id)
-        r = self.agent.post(rq, json=payload)
-        if 204 != r.status_code:
-            parseApiError(r)
-            return False
-        logger.info(f'Sync item {item_id} catalogs complete')              
-        return True
-
     def itemAddCad(self, item_id:int, localFile):
         """ 
         Aggiunge un file cad all'item. 
@@ -213,6 +200,36 @@ class Element(object):
             parseApiError(r)
             return False
         return True
+
+    def itemAddWarehouse(self, item_id:int, payload):
+        """ attach warehouse to the item"""
+        logger.debug(f'Add warehouse at {item_id} - {payload}')
+        rq = f'{self.host}/item/{item_id}/warehouse'
+        r = self.agent.post(rq, json=payload)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def itemRemoveWarehouse(self, item_id:int, warehouse_id:int):
+        """ attach warehouse to the item"""
+        logger.debug(f'Remove warehouse {warehouse_id} @ item {item_id}')
+        rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
+        r = self.agent.delete(rq)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def itemPatchWarehouse(self, item_id:int, warehouse_id:int, payload):
+        """ attach warehouse to the item"""
+        logger.debug(f'Patching item {item_id}@warehouse {warehouse_id} - {payload}')
+        rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
+        r = self.agent.patch(rq, json=payload)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True        
 
     #attribute
     def createAttribute(self, payload):
@@ -344,25 +361,6 @@ class Element(object):
             return False
         return json.loads(r.text)
 
-    def patchFamilyDatasheet(self, family_id:int, datasheet_id:int):
-        """
-        Associa datasheet a famiglia
-        """
-        logger.debug(f'Pathing family {family_id} with datasheet {datasheet_id}')
-        rq = '%s/family/%s' % (self.host, family_id)
-        payload = {
-            'datasheet_id': datasheet_id
-            }
-        try:
-            r = self.agent.patch(rq, json=payload)
-        except Exception:
-            logging.exception("Exception occurred")
-            return False
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        return json.loads(r.text)
-
     def updateFamilyCover(self, family_id:int, localFile):
         """ 
         Aggiorna cover famiglia. 
@@ -408,8 +406,8 @@ class Element(object):
         Aggiunge una norma riconosciuta, alla famiglia.
         SUGGEST - USE syncFamilyNorm!
         """
-        logger.debug('Attaching norm %s at family %s ...' % (norm_id, family_id))
-        rq = '%s/family/%s/norm' % (self.host, family_id)
+        logger.debug(f'Attaching norm {norm_id} at family {family_id} ...')
+        rq = f"{self.host}/family/{family_id}/norm"
         payload = {
             'norm_id' : norm_id
             }
@@ -424,8 +422,8 @@ class Element(object):
         Aggiunge una qualità alla famiglia
         SUGGEST - USE syncFamilyNorm!
         """
-        logger.debug('Attach quality %s at family %s' % (quality_id, family_id))
-        rq = '%s/family/%s/quality' % (self.host, family_id)
+        logger.debug(f'Attach quality {quality_id} at family {family_id}')
+        rq = f'{self.host}/family/{family_id}/quality'
         payload = {
             'quality_id' : quality_id
             }
@@ -444,7 +442,7 @@ class Element(object):
             'feature_id': feature_id,
             'description': description
         }
-        rq = '%s/family/%s/feature' % (self.host, family_id)
+        rq = f'{self.host}/family/{family_id}/feature'
         try:
             r = self.agent.post(rq, json=payload)
         except Exception:
@@ -490,8 +488,8 @@ class Element(object):
         """
         Crea una nuova feature.
         """
-        logger.debug('Creating new feature with name %s' % feature_name)
-        rq = '%s/feature' % (self.host)
+        logger.debug(f'Creating new feature with name {feature_name}')
+        rq = f'{self.host}/feature'
         payload = {
             'name' : feature_name
             }
@@ -510,7 +508,7 @@ class Element(object):
         params = {
             'name' : feature_name
         }
-        rq = '%s/feature/findByName' % (self.host)
+        rq = f'{self.host}/feature/findByName'
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             parseApiError(r)
@@ -676,6 +674,17 @@ class Element(object):
         return _category
 
     #catalog
+    def listCatalog(self, query=None):
+        """ Get catalog by ID """
+        logger.debug(f'List catalogs')
+        rq = f'{self.host}/catalog'
+        r = self.agent.get(rq, params=query)
+        logger.debug(r)
+        if 200 != r.status_code:
+            return False
+        catalogs = json.loads(r.text)
+        return catalogs
+
     def getCatalog(self, catalog_id:int, params=None):
         """ Get catalog by ID """
         logger.debug(f'Get catalog {catalog_id}')
@@ -719,4 +728,53 @@ class Element(object):
         if 200 != r.status_code:
             return False
         leaf = json.loads(r.text)
-        return leaf       
+        return leaf
+    
+    #warehouse
+    def listWarehouse(self, query=None):
+        """
+        Read all warehouse
+        """
+        logger.debug('Reading all warehouses')
+        rq = f'{self.host}/warehouse'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        warehouses = json.loads(r.text)
+        return warehouses
+
+    def getWarehouse(self, warehouse_id:int, params=None):
+        """Get warehouse details"""
+        logger.debug(f'Get warehouse {warehouse_id}')
+        rq = f'{self.host}/warehouse/{warehouse_id}'
+        r = self.agent.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        warehouse = json.loads(r.text)
+        return warehouse
+
+    def createWarehouse(self, payload):
+        """ 
+        Create new warehouse
+        """
+        logger.debug(f'Creating new warehouse {payload}')
+        rq = f'{self.host}/warehouse'
+        r = self.agent.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        warehouse = json.loads(r.text)
+        return warehouse
+
+    def updateWarehouse(self, warehouse_id:int, payload):
+        """ 
+        Create new warehouse
+        """
+        logger.debug(f'Updateing warehouse {warehouse_id} - {payload}')
+        rq = f'{self.host}/warehouse/{warehouse_id}'
+        r = self.agent.post(rq, json=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        warehouse = json.loads(r.text)
+        return warehouse        
