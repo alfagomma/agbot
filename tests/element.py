@@ -36,6 +36,10 @@ def itemWarehouse():
     #remove
     whid=6
     el.itemRemoveWarehouse(item_id, whid)
+    ## find by name
+
+    whn = el.getWarehouseFromName('290M', 'include=erp')
+    print(whn)
 
 
 def testwh():

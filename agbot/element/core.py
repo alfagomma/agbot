@@ -777,4 +777,20 @@ class Element(object):
             parseApiError(r)
             return False
         warehouse = json.loads(r.text)
-        return warehouse        
+        return warehouse
+    
+    def getWarehouseFromName(self, name, params=None):
+        """read warehouse from name"""
+        logger.debug(f'Search warehouse from {name}')
+        payload ={
+            'name' : name
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}        
+        rq = f'{self.host}/warehouse/findByName'
+        r = self.agent.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)
