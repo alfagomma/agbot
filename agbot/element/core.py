@@ -67,7 +67,7 @@ class Element(object):
         logger.info('Create item %s' % item['data']['id'])
         return item
 
-    def getItemFromExt_id(self, ext_id:int, params=None):
+    def getItemFromExt_id(self, ext_id:str, params=None):
         """
         Get item from ext_id.
         """
