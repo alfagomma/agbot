@@ -121,7 +121,7 @@ class H2o(object):
         Read customer from erp external ID
         """
         logger.debug(f'Reading customer {customer_id} for erp {erp_id}')
-        rq = f'{self.host}/customer/findByErpId'
+        rq = f'{self.host}/customer/findByErp'
         payload = {
             'erp_id': erp_id, 
             'ext_id': customer_id 
