@@ -19,7 +19,6 @@ class H2o(object):
     """
     H2o core class .
     """
-
     def __init__(self, profile_name=False):
         """
         Initialize main class.
@@ -193,17 +192,71 @@ class H2o(object):
             parseApiError(r)
             return False
 
-    def updateCustomerAddress(self, customer_id, payload):
+    #customer address
+    def createCustomerAddress(self, customer_id:int, payload):
+        """
+        Create new customer address
+        """
+        logger.debug(f'Creating customer {customer_id} address')
+        rq = f'{self.host}/customer/{customer_id}/address'
+        r = self.agent.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+
+    def updateCustomerAddress(self, customer_id:int, address_id:int, payload):
         """
         Update customer address.
         """
-        logger.debug(f'Init updating {customer_id} address ...')
-        rq = f'{self.host}/customer/{customer_id}/address'
+        logger.debug(f'Init updating {customer_id} address {address_id} ...')
+        rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
         r = self.agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
     
+    def getCustomerAddresses(self, customer_id:int, query=None):
+        """
+        List customer addresses.
+        """
+        logger.debug(f'Getting all customer {customer_id} addresses')
+        rq = '{self.host}/customer/{customer_id}/address'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        addresses = json.loads(r.text)
+        return addresses
+
+    def getCustomerAddress(self, customer_id:int, address_id:int, params=None):
+        """
+        Get customer address.
+        """
+        logger.debug(f'Get customer {customer_id} address {address_id}')
+        rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
+        r = self.agent.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        item = json.loads(r.text)
+        return item
+
+    def getCustomerAddressFromExtId(self, customer_id:int, ext_id:str, query=None):
+        """
+        List customer addresses.
+        """
+        logger.debug(f'Search customer {customer_id} address ext_id {ext_id}.')
+        payload ={
+            'ext_id' : ext_id
+        }
+        if query:
+            new_payload = dict(item.split("=") for item in query.split('&'))
+            payload = {**payload, **new_payload}        
+        rq = f'{self.host}/customer/{customer_id}/address/findByExtId'
+        r = self.agent.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text)      
+        
     #competitor
     def createCompetitor(self, payload):
         """
@@ -231,6 +284,3 @@ class H2o(object):
         competitor = json.loads(r.text)
         return competitor    
     
-    #currency
-
-    #sales channel
