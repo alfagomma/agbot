@@ -28,52 +28,6 @@ class H2o(object):
         self.agent = session.create()
         self.host = f'{session.getAgapiHost()}/h2o'
 
-    #order
-    def createOrder(self, payload):
-        """
-        Create new order
-        """
-        logger.debug('Creating order %s' % payload)
-        rq = f'{self.host}/order'
-        r = self.agent.post(rq, json=payload)
-        if 201 != r.status_code:
-            parseApiError(r)
-            return False
-        order = json.loads(r.text)
-        logger.info('Order %s created' % order['data']['id'])
-        return order
-
-    def getOrder(self, order_id:int):
-        """
-        Get order by id
-        """
-        logger.debug(f'Reading order {order_id}..')
-        rq = f'{self.host}/order/{order_id}'
-        r = self.agent.get(rq)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        order = json.loads(r.text)
-        return order        
-
-    def getOrderFromErp(self, order_id, erp_id):
-        """
-        Read order from erp external ID.
-        """
-        logger.debug(f'Reading order {order_id} for erp {erp_id}')
-        rq = f'{self.host}/order/findByErpId'
-        payload = {
-            'erp_id': erp_id, 
-            'ext_id': order_id 
-            }
-        r = self.agent.get(rq, params=payload)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        order = json.loads(r.text)
-        logger.debug('Find order %s' % order['data']['id'])
-        return order
-
     #customer
     def getCustomers(self, query=None):
         """
@@ -84,8 +38,8 @@ class H2o(object):
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
-        _items = json.loads(r.text)
-        return _items
+        customer = json.loads(r.text)
+        return customer
 
     def createCustomer(self, payload):
         """
@@ -191,6 +145,8 @@ class H2o(object):
         if 201 != r.status_code:
             parseApiError(r)
             return False
+        resp = json.loads(r.text)
+        return resp            
 
     #customer address
     def createCustomerAddress(self, customer_id:int, payload):
@@ -203,6 +159,8 @@ class H2o(object):
         if 201 != r.status_code:
             parseApiError(r)
             return False
+        address = json.loads(r.text)
+        return address
 
     def updateCustomerAddress(self, customer_id:int, address_id:int, payload):
         """
@@ -214,6 +172,8 @@ class H2o(object):
         if 200 != r.status_code:
             parseApiError(r)
             return False
+        address = json.loads(r.text)
+        return address
     
     def getCustomerAddresses(self, customer_id:int, query=None):
         """
@@ -236,8 +196,8 @@ class H2o(object):
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
-        item = json.loads(r.text)
-        return item
+        address = json.loads(r.text)
+        return address
 
     def getCustomerAddressFromExtId(self, customer_id:int, ext_id:str, query=None):
         """
@@ -255,7 +215,8 @@ class H2o(object):
         if 200 != r.status_code:
             parseApiError(r)
             return False
-        return json.loads(r.text)      
+        address= json.loads(r.text)
+        return address
         
     #competitor
     def createCompetitor(self, payload):
@@ -270,6 +231,7 @@ class H2o(object):
             return False
         competitor = json.loads(r.text)
         logger.info('Competitor %s created' % competitor['data']['id'])
+        return competitor
 
     def getCompetitor(self, competitor_id:int):
         """
@@ -284,3 +246,73 @@ class H2o(object):
         competitor = json.loads(r.text)
         return competitor    
     
+    #order
+    def createOrder(self, payload):
+        """
+        Create new order.
+        """
+        logger.debug('Creating order %s' % payload)
+        rq = f'{self.host}/order'
+        r = self.agent.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        order = json.loads(r.text)
+        logger.info('Order %s created' % order['data']['id'])
+        return order
+
+    def getOrders(self, query=None):
+        """
+        Read all orders.
+        """
+        logger.debug('Getting orders.')
+        rq = f'{self.host}/order'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        orders = json.loads(r.text)
+        return orders
+
+    def getOrder(self, order_id:int):
+        """
+        Get order by id
+        """
+        logger.debug(f'Reading order {order_id}..')
+        rq = f'{self.host}/order/{order_id}'
+        r = self.agent.get(rq)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        order = json.loads(r.text)
+        return order        
+
+    def getOrderFromErp(self, erp_id:int, ext_id):
+        """
+        Read order from erp external ID.
+        """
+        logger.debug(f'Reading order {ext_id} for erp {erp_id}')
+        rq = f'{self.host}/order/findByErp'
+        payload = {
+            'erp_id': erp_id, 
+            'ext_id': ext_id 
+            }
+        r = self.agent.get(rq, params=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        order = json.loads(r.text)
+        logger.debug('Find order %s' % order['data']['id'])
+        return order
+
+    #order type
+    def getOrderTypes(self, query=None):
+        """
+        Read all order types.
+        """
+        logger.debug('Getting order types.')
+        rq = f'{self.host}/order/type'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        orderTypes = json.loads(r.text)
+        return orderTypes
