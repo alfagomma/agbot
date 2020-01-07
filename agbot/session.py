@@ -54,6 +54,7 @@ class Session(object):
             return rq
         # Auth agent
         token = self.__getToken(rq)
+        logger.debug(f'Token is {token}')
         try:
             rq.headers.update({
                 'x-uid': token['uid'],
