@@ -26,7 +26,11 @@ class Hook(object):
         """
         logger.debug('Init Hook')
         session = Session(profile_name)
-        self.agent = session.create()
+        rqagent =  session.create()
+        if not rqagent:
+            logger.error('Unable to start hook core without valid session.')
+            exit(1)
+        self.agent = rqagent
         self.host = session.getHookHost()
 
     #ERP

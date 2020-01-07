@@ -26,7 +26,11 @@ class Base(object):
         """
         logger.debug('Init Base SDK')
         session = Session(profile_name)
-        self.agent = session.create()
+        rqagent =  session.create()
+        if not rqagent:
+            logger.error('Unable to start base core without valid session.')
+            exit(1)
+        self.agent = rqagent
         self.host = session.getAgapiHost()
 
     #erp

@@ -54,7 +54,8 @@ class Session(object):
             return rq
         # Auth agent
         token = self.__getToken(rq)
-        logger.debug(f'Token is {token}')
+        if not token:
+            return False
         try:
             rq.headers.update({
                 'x-uid': token['uid'],
@@ -62,7 +63,7 @@ class Session(object):
                 'x-csrf': token['csrf']
                 })
         except Exception:
-            logger.error("Fatal error on apibot session", exc_info=True)
+            logger.error("Invalid token keys", exc_info=True)
         return rq
 
     def getAgapiHost(self):

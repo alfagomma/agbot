@@ -25,7 +25,11 @@ class Element(object):
         """
         logger.debug('Init Element SDK')
         session = Session(profile_name)
-        self.agent = session.create()
+        rqagent =  session.create()
+        if not rqagent:
+            logger.error('Unable to start element core without valid session.')
+            exit(1)
+        self.agent = rqagent
         self.host = f'{session.getAgapiHost()}/element'
 
     #item

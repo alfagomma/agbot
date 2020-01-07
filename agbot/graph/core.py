@@ -24,7 +24,11 @@ class Graph(object):
         """
         logger.debug('Init Graph SDK')
         session = Session(profile_name)
-        self.agent = session.create(False)
+        rqagent =  session.create(False)
+        if not rqagent:
+            logger.error('Unable to start graph core without valid session.')
+            exit(1)
+        self.agent = rqagent
         self.host = session.getGraphHost()
 
     def get_language(self, language_id:int, params=None):

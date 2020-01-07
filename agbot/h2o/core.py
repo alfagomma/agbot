@@ -25,7 +25,11 @@ class H2o(object):
         """
         logger.debug('Init H2o SDK')
         session = Session(profile_name)
-        self.agent = session.create()
+        rqagent =  session.create()
+        if not rqagent:
+            logger.error('Unable to start h2o core without valid session.')
+            exit(1)
+        self.agent = rqagent
         self.host = f'{session.getAgapiHost()}/h2o'
 
     #customer
@@ -316,3 +320,32 @@ class H2o(object):
             return False
         orderTypes = json.loads(r.text)
         return orderTypes
+
+    def getOrderTypeFromName(self, name:str):
+        """
+        Get order type by name.
+        """
+        logger.debug('Getting order types.')
+        rq = f'{self.host}/order/type/findByName'
+        payload={
+            'name':name
+        }
+        r = self.agent.get(rq, params=payload)
+        if 200 != r.status_code:
+            return False
+        orderType = json.loads(r.text)
+        return orderType        
+
+    def createOrderType(self, payload):
+        """
+        Create new order type.
+        """
+        logger.debug('Creating new order type.')
+        rq = f'{self.host}/order/type'
+        r = self.agent.get(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        orderType = json.loads(r.text)
+        logger.info(f"Order type {orderType['data']['id']} created")
+        return orderType        
