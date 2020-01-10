@@ -82,22 +82,25 @@ class Element(object):
         if params:
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}        
-        rq = '%s/item/findByExtId' % (self.host)
+        rq = f'{self.host}/item/findByExtId'
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
         return json.loads(r.text) 
 
-    def getItemFromCode(self, item_code:str):
+    def getItemFromCode(self, item_code:str, params=None):
         """
         Get item from code
         """
         logger.debug(f'Search item code {item_code}.')
         payload ={
             'code' : item_code
-        }     
-        rq = '%s/item/findByCode' % (self.host)
+        }
+        if params:
+            new_payload = dict(item.split("=") for item in params.split('&'))
+            payload = {**payload, **new_payload}
+        rq = f'{self.host}/item/findByCode'
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
