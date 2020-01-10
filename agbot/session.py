@@ -154,4 +154,7 @@ def parseApiError(response):
         if 'errors' in problem:
             for k,v in problem['errors'].items():
                 msg+=f'\n\t -{k}:{v}'
-        logger.warning(msg)
+        if status >=400 and status <500:
+            logger.debug(msg)
+        else:
+            logger.warning(msg)
