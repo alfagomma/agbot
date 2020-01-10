@@ -24,6 +24,15 @@ def test():
     items = el.getItems('take=10')
     logger.info(items)
 
+def testcompetitor():
+    """ test Element class."""
+    # import argparse
+    logger.debug('Init test')
+    el = Element()
+
+    delete = el.itemDeleteCompetitor(78077, 41)
+    logger.info(delete)    
+
 if __name__ == '__main__':
     """ Do Test """  
-    test()
+    testcompetitor()

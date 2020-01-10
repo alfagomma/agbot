@@ -208,6 +208,39 @@ class Element(object):
             return False
         return True
 
+    def itemAddCompetitor(self, item_id:int, payload):
+        """ attach warehouse to the item"""
+        logger.debug(f'Add xref item {item_id} {payload}')
+        rq = f'{self.host}/item/{item_id}/xcompetitor'
+        r = self.agent.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def itemUpdateCompetitor(self, item_id:int, xref_id:int, code):
+        """ update item competitor cross reference"""
+        logger.debug(f'Update competitor {xref_id} with code {code}')
+        payload={
+            'code': code
+        }
+        rq = f'{self.host}/item/{item_id}/xcompetitor/{xref_id}'
+        r = self.agent.post(rq, json=payload)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
+    def itemDeleteCompetitor(self, item_id:int, competitor_id:int):
+        """ Remove item competitor cross reference"""
+        logger.debug(f'Removing competitor {competitor_id} from item {item_id}')
+        rq = f'{self.host}/item/{item_id}/xcompetitor/{competitor_id}'
+        r = self.agent.delete(rq)
+        if 204 != r.status_code:
+            parseApiError(r)
+            return False
+        return True
+
     def itemAddWarehouse(self, item_id:int, payload):
         """ attach warehouse to the item"""
         logger.debug(f'Add warehouse at {item_id} - {payload}')
