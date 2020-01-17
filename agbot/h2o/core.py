@@ -91,31 +91,14 @@ class H2o(object):
         logger.debug('Find customer %s' % customer['data']['id'])
         return customer
     
-    def getCustomerFromVatcode(self, vatcode):
-        """
-        Read customer from vat code.
-        """
-        logger.debug(f'Reading customer from vat code {vatcode}')
-        rq = f'{self.host}/customer/findByVatcode'
-        payload = {
-            'vatcode': vatcode
-            }
-        r = self.agent.get(rq, params=payload)
-        if 200 != r.status_code:
-            parseApiError(r)
-            return False
-        customer = json.loads(r.text)
-        logger.debug('Find customer %s' % customer['data']['id'])
-        return customer
-
-    def getCustomerFromTaxcode(self, taxcode):
+    def getCustomerFromTax(self, code):
         """
         Read customer from tax code.
         """
-        logger.debug(f'Reading customer from tax code {taxcode}')
-        rq = f'{self.host}/customer/findByTaxcode'
+        logger.debug(f'Reading customer from tax code {code}')
+        rq = f'{self.host}/customer/findByTaX'
         payload = {
-            'taxcode': taxcode
+            'code': code
             }
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
