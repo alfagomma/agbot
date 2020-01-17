@@ -96,7 +96,7 @@ class H2o(object):
         Read customer from tax code.
         """
         logger.debug(f'Reading customer from tax code {code}')
-        rq = f'{self.host}/customer/findByTaX'
+        rq = f'{self.host}/customer/findByTax'
         payload = {
             'code': code
             }
