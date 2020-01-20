@@ -41,7 +41,7 @@ class Hook(object):
         logger.debug(f'Calling erp sap queue')
         rq = f'{self.host}/erp/sap/material'
         r = self.agent.post(rq, json=payload)
-        if 201 != r.status_code:
+        if 204 != r.status_code:
             parseApiError(r)
             return False
         return True
@@ -54,7 +54,7 @@ class Hook(object):
         logger.debug(f'Calling erp sap customer queue')
         rq = f'{self.host}/erp/sap/customer'
         r = self.agent.post(rq, json=payload)
-        if 201 != r.status_code:
+        if 204 != r.status_code:
             parseApiError(r)
             return False
         return True    
