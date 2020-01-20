@@ -46,4 +46,15 @@ class Hook(object):
             return False
         return True
    
-    
+    #ERP SAP CUSTOMER
+    def erp_sap_customer(self, payload):
+        """
+        Call erp sap customer worker queue
+        """
+        logger.debug(f'Calling erp sap customer queue')
+        rq = f'{self.host}/erp/sap/customer'
+        r = self.agent.post(rq, json=payload)
+        if 201 != r.status_code:
+            parseApiError(r)
+            return False
+        return True    
