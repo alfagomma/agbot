@@ -13,7 +13,7 @@ __date__ = "2020-01-20"
 import json, logging, time
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 class Eb2(object):
     """
     Eb2 core class .

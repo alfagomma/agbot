@@ -14,7 +14,7 @@ import json, logging
 
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class Sqm(object):
     """

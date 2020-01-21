@@ -9,7 +9,7 @@ Session
 import os, json, time, logging, requests, configparser
 from sys import exit
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class Session(object):
     """

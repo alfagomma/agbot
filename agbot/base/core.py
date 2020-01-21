@@ -13,7 +13,7 @@ __date__ = "2019-11-07"
 import json, logging
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class Base(object):
     """

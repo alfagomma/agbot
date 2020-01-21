@@ -7,7 +7,7 @@ Cache utility.
 
 import os, hashlib, json, logging
 
-logger = logging.getLogger()
+logger = logging.getLogger(__name__)
 
 class Cache(object):
     """ Cache utilities."""
