@@ -747,13 +747,10 @@ class Element(object):
         tree = json.loads(r.text)
         return tree    
 
-    def getTreeLeaves(self, catalog_id:int, tree_id:int, params=None):
+    def getTreeLeaves(self, catalog_id:int, params=None):
         """ Get catalog tree leaves """
         logger.debug(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/leaf'
-        params = {
-            'tree': tree_id
-        }
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
