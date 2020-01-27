@@ -10,7 +10,9 @@ __author__ = "Davide Pellegrino"
 __version__ = "2.1.1"
 __date__ = "2019-11-07"
 
-import json, logging
+import json
+import logging
+
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
@@ -81,6 +83,47 @@ class Base(object):
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
         rq = f'{self.host}/unitofmeasure/findByCode'
+        r = self.agent.get(rq, params=params)
+        if 200 != r.status_code:
+            return False
+        uom = json.loads(r.text)
+        return uom        
+
+    #Currency
+    def getCurrencies(self, query=None):
+        """Get all currencies."""
+        logger.debug('Getting all unit of measure...')
+        rq = f'{self.host}/currency'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        uoms = json.loads(r.text)
+        return uoms
+
+    def getCurrency(self, currency_id:int, query=None):
+        """
+        Leggo uom da id.
+        """
+        logger.debug(f'Reading currency {currency_id}...')
+        rq = f'{self.host}/currency/{currency_id}'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        uom = json.loads(r.text)
+        return uom
+
+    def getCurrencyFromCode(self, code:str, query=None):
+        """
+        Get currency from code.
+        """
+        logger.debug(f'Reading currency code {code}...')
+        params = {
+            'code': code
+            }
+        if query:
+            new_params = dict(item.split("=") for item in query.split('&'))
+            params = {**params, **new_params}     
+        rq = f'{self.host}/currency/findByCode'
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
