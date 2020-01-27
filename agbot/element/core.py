@@ -131,7 +131,8 @@ class Element(object):
         rq = '%s/item/%s' % (self.host, item_id)
         r = self.agent.post(rq, json=payload)
         if 200 != r.status_code:
-            return parseApiError(r)
+            parseApiError(r)
+            return False
         return json.loads(r.text)
 
     def patchItem(self, item_id:int, payload):
