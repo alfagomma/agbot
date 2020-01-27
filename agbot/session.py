@@ -158,3 +158,4 @@ def parseApiError(response):
             logger.debug(msg)
         else:
             logger.warning(msg)
+        return msg
