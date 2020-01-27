@@ -327,7 +327,7 @@ class Element(object):
         Update attribute.
         """
         logger.debug(f'Updating attribute {attribute_id} ...')
-        rq = f'{self.host}/family/{attribute_id}'
+        rq = f'{self.host}/attribute/{attribute_id}'
         r = self.agent.post(rq, json=payload) 
         if 200 != r.status_code:
             parseApiError(r)
