@@ -275,7 +275,7 @@ class Element(object):
     def createAttribute(self, payload):
         """ crea un nuovo attributo """
         logger.debug('Creating new attribute %s' % payload)
-        rq = '%s/attribute' % (self.host)
+        rq = f'{self.host}/attribute'
         r = self.agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
@@ -283,6 +283,28 @@ class Element(object):
         attribute = json.loads(r.text)
         logger.info('Create attribute %s' % attribute['data']['id'])
         return attribute
+
+    def getAttributes(self, query=None):
+        """
+        Read all attributes.
+        """
+        logger.debug('Getting all the attributes.')
+        rq = f'{self.host}/attribute'
+        r = self.agent.get(rq, params=query)
+        if 200 != r.status_code:
+            return False
+        attributes = json.loads(r.text)
+        return attributes
+
+    def getAttribute(self, attribute_id:int, params=None):
+        """ Attribute by id """
+        logger.debug(f'Get attribute {attribute_id}')
+        rq = f'{self.host}/attribute/{attribute_id}'
+        r = self.agent.get(rq, params=params)
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        return json.loads(r.text) 
 
     def getAttributeByName(self, attribute_name:str, params=None):
         """ Attribute by name """
@@ -292,13 +314,26 @@ class Element(object):
         if params:
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
-        logger.debug('Get attribute %s' % attribute_name)
-        rq = '%s/attribute/findByName' % (self.host)
+        logger.debug(f'Get attribute {attribute_name}')
+        rq = f'{self.host}/attribute/findByName'
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
         return json.loads(r.text) 
+
+    def updateAttribute(self, attribute_id:int, payload):
+        """
+        Update attribute.
+        """
+        logger.debug(f'Updating attribute {attribute_id} ...')
+        rq = f'{self.host}/family/{attribute_id}'
+        r = self.agent.post(rq, json=payload) 
+        if 200 != r.status_code:
+            parseApiError(r)
+            return False
+        _family = json.loads(r.text)
+        return _family 
 
     #family
     def createFamily(self, payload):
