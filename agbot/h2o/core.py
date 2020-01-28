@@ -298,7 +298,7 @@ class H2o(object):
         logger.debug('Creating order detail')
         rq = f'{self.host}/order/{order_id}/detail'
         r = self.agent.post(rq, json=payload)
-        if 201 != r.status_code:
+        if 204 != r.status_code:
             parseApiError(r)
             return False
         order = json.loads(r.text)
