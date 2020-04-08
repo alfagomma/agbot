@@ -348,13 +348,13 @@ class Element(object):
         logger.info('Create family %s' % family['data']['id'])
         return family
 
-    def getFamilies(self, query=None):
+    def getFamilies(self, params=None):
         """
         Prende tutte le famiglie.
         """
-        logger.debug('Getting all the families')
+        logger.debug(f'Getting all the families with params {params}')
         rq = '%s/family' % (self.host)
-        r = self.agent.get(rq, params=query)
+        r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         families = json.loads(r.text)
