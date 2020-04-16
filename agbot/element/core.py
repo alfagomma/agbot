@@ -71,7 +71,7 @@ class Element(object):
         logger.info('Create item %s' % item['data']['id'])
         return item
 
-    def getItemFromExt_id(self, ext_id:str, params=None):
+    def getItemFromExt_id(self, ext_id:str, params={}):
         """
         Get item from ext_id.
         """
@@ -79,9 +79,7 @@ class Element(object):
         payload ={
             'ext_id' : ext_id
         }
-        if params:
-            new_payload = dict(item.split("=") for item in params.split('&'))
-            payload = {**payload, **new_payload}        
+        if params:payload.update(params)
         rq = f'{self.host}/item/findByExtId'
         r = self.agent.get(rq, params=payload)
         if 200 != r.status_code:
