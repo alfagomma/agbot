@@ -23,6 +23,8 @@ def test():
     h = H2o()
     customers = h.getCustomers('take=5')
     logger.info(customers)
+    ordertypes=h.getOrderTypeFromName('bill')
+    logger.info(ordertypes)
 
 if __name__ == '__main__':
     """ Do Test """  
