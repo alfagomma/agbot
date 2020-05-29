@@ -10,7 +10,10 @@ __author__ = "Davide Pellegrino"
 __version__ = "2.1.1"
 __date__ = "2019-11-07"
 
-import json, logging, time
+import json
+import logging
+import time
+
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
@@ -23,13 +26,14 @@ class Graph(object):
         Initialize main class with this and that.
         """
         logger.debug('Init Graph SDK')
-        session = Session(profile_name)
-        rqagent =  session.create(False)
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start graph core without valid session.')
+            logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('aggraph_host')
+        self.host = host
         self.agent = rqagent
-        self.host = session.getGraphHost()
 
     def get_language(self, language_id:int, params=None):
         """

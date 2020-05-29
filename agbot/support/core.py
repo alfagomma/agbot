@@ -24,13 +24,14 @@ class Support(object):
         Initialize main class.
         """
         logger.debug('Init support SDK')
-        session = Session(profile_name)
-        rqagent =  session.create()
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start support core without valid session.')
+            logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('agapi_host')
+        self.host = f'{host}/support'
         self.agent = rqagent
-        self.host = f'{session.getAgapiHost()}/support'
 
     #category
     def createCategory(self, payload):

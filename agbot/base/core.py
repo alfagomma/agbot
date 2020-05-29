@@ -22,18 +22,19 @@ class Base(object):
     AGCloud BASE Data core class .
     """
 
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """
         logger.debug('Init Base SDK')
-        session = Session(profile_name)
-        rqagent =  session.create()
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
             logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('agapi_host')
+        self.host = host
         self.agent = rqagent
-        self.host = session.getAgapiHost()
 
     #erp
     def getErp(self, erp_id:int, params=None):
@@ -52,7 +53,7 @@ class Base(object):
     def getUoms(self, query=None):
         """Get all uoms."""
         logger.debug('Getting all unit of measure...')
-        rq = f'{self.host}/unitofmeasure'
+        rq = f'{self.host}/settings/unitofmeasure'
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -64,7 +65,7 @@ class Base(object):
         Leggo uom da id.
         """
         logger.debug(f'Reading family {uom_id}...')
-        rq = f'{self.host}/unitofmeasure/{uom_id}'
+        rq = f'{self.host}/settings/unitofmeasure/{uom_id}'
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -82,7 +83,7 @@ class Base(object):
         if query:
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
-        rq = f'{self.host}/unitofmeasure/findByCode'
+        rq = f'{self.host}/settings/unitofmeasure/findByCode'
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
@@ -93,7 +94,7 @@ class Base(object):
     def getCurrencies(self, query=None):
         """Get all currencies."""
         logger.debug('Getting all unit of measure...')
-        rq = f'{self.host}/currency'
+        rq = f'{self.host}/settings/currency'
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -105,7 +106,7 @@ class Base(object):
         Leggo uom da id.
         """
         logger.debug(f'Reading currency {currency_id}...')
-        rq = f'{self.host}/currency/{currency_id}'
+        rq = f'{self.host}/settings/currency/{currency_id}'
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
@@ -123,7 +124,7 @@ class Base(object):
         if query:
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
-        rq = f'{self.host}/currency/findByCode'
+        rq = f'{self.host}/settings/currency/findByCode'
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
             return False

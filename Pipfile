@@ -7,8 +7,6 @@ verify_ssl = true
 pylint = "*"
 
 [packages]
-requests = "*"
-redis = "*"
 agbot = {editable = true,path = "."}
 
 [requires]

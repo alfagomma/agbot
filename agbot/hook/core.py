@@ -20,18 +20,19 @@ class Hook(object):
     Hook core class .
     """
 
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """
         logger.debug('Init Hook')
-        session = Session(profile_name)
-        rqagent =  session.create()
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start hook core without valid session.')
+            logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('aghook_host')
+        self.host = host
         self.agent = rqagent
-        self.host = session.getHookHost()
 
     #ERP
     def erp_sap_material(self, payload):

@@ -24,13 +24,14 @@ class Element(object):
         Initialize main class with this and that.
         """
         logger.debug('Init Element SDK')
-        session = Session(profile_name)
-        rqagent =  session.create()
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start element core without valid session.')
+            logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('agapi_host')
+        self.host = f'{host}/element'
         self.agent = rqagent
-        self.host = f'{session.getAgapiHost()}/element'
 
     #item
     def getItem(self, item_id:int, params=None):

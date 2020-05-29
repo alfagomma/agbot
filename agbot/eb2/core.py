@@ -19,18 +19,19 @@ class Eb2(object):
     Eb2 core class .
     """
 
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """
         logger.debug('Init Eb2 SDK')
-        session = Session(profile_name)
-        rqagent =  session.create()
+        s = Session(profile_name)
+        rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start eb2 core without valid session.')
+            logger.error('Unable to start base core without valid session.')
             exit(1)
+        host=s.config.get('agapi_host')
+        self.host=f'{host}/eb2'
         self.agent = rqagent
-        self.host = f'{session.getAgapiHost()}/eb2'
 
     #company
     def getCompany(self, company_id:int, params=None):

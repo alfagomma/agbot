@@ -5,7 +5,10 @@
 Cache utility.
 """
 
-import os, hashlib, json, logging
+import hashlib
+import json
+import logging
+import os
 
 logger = logging.getLogger(__name__)
 
