@@ -22,10 +22,10 @@ class Session(object):
     """
     AGBot Session class .
     """
-    
     config=False
+    __agent=False
     __credentials=False
-    __tokenName = 'ag:agbot'
+    __cacheKey = 'ag:agbot'
 
     def __init__(self, profile_name='default'):
         """
@@ -33,7 +33,7 @@ class Session(object):
         """
         if not profile_name:
             profile_name = 'default'        
-        logger.info(f'Init agbot session with {profile_name} profie..')
+        logger.info(f'Init agbot session with {profile_name} profile.')
         ## Config
         config_path = os.path.expanduser('~/.agcloud/config')
         cp = configparser.ConfigParser()
@@ -51,7 +51,7 @@ class Session(object):
             logger.error(f'Unknow {profile_name} credentials!')
             exit(1)
         self.__credentials=ccp[profile_name]
-        # #cache
+        #cache
         self.__setCache()
 
     def __setCache(self):
@@ -59,81 +59,95 @@ class Session(object):
         logger.debug('Setting redis cache...')
         redis_host = self.config.get('redis_host', '127.0.0.1')
         redis_pass = self.__credentials.get('redis_password', None)
-        cache=Redis(host=redis_host, password=redis_pass, decode_responses=True)
-        self.cache=cache
+        self.cache=Redis(host=redis_host, password=redis_pass, decode_responses=True)
         return True
 
-    def __getToken(self, rq):
+    def __getToken(self):
         """ Read session token. If not exists, it creates it. """
         logger.info('Init reading token..')
-        token = self.cache.hgetall(self.__tokenName)
+        token = self.cache.hgetall(self.__cacheKey)
         if not token:
-            token = self.__createToken(rq)
+            token = self.__createToken()
         return token
 
-    def __createToken(self, rq):
+    def __setToken(self, payload):
+        """save token """
+        logger.debug(f'Init set token {payload}')
+        expire_in = payload['expires_in']
+        uid = payload['access_token']
+        token = {
+            'uid' : uid
+        }
+        tokenExpireAt=int(time.time()) + expire_in
+        self.cache.hmset(self.__cacheKey, token)
+        self.cache.expireat(self.__cacheKey, int(tokenExpireAt))
+        return token
+
+    def __createToken(self):
         """ Create new session token. """
         logger.info(f'Init new session token ...')
         agcloud_id = self.__credentials.get('agcloud_id')
         agcloud_key = self.__credentials.get('agcloud_key')
         host = self.config.get('agapi_host')
-        rqSession = f'{host}/session'
-        rqCsrf = f'{host}/session/csrf'
         rqToken = f'{host}/auth/token'
-        rUid = rq.post(rqToken, auth=(agcloud_id, agcloud_key))
+        rUid = requests.post(rqToken, auth=(agcloud_id, agcloud_key))
         if 200 != rUid.status_code:
             parseApiError(rUid)
             return False
         responseUid = json.loads(rUid.text)
-        tokenExpire = int(time.time()) + responseUid['expires_in']
-
-        uid = responseUid['access_token']
-        rSid = rq.post(rqSession)
-        if 200 != rSid.status_code:
-            parseApiError(rSid)
-            return False  
-        responseSid = json.loads(rSid.text) 
-        sid = responseSid['token']
-        rCsrf = rq.post(rqCsrf)
-        if 200 != rCsrf.status_code:
-            parseApiError(rCsrf)
-            return False
-        responseCsrf = json.loads(rCsrf.text)
-        csrf = responseCsrf['csrf_token']
-        token = {
-            'uid' : uid,
-            'sid' : sid,
-            'csrf' : csrf
-        }
-        self.cache.hmset(self.__tokenName, token)
-        self.cache.expireat(self.__tokenName, tokenExpire)
+        token = self.__setToken(responseUid)
         return token
 
-    def createAgent(self, auth=True):
-        """Create a new request session."""
-        logger.info(f'Creating new request session {auth}...')
-        s = requests.Session()
-        s.headers.update({'user-agent': 'AGBot-Session'})
-        if not auth:
-            logger.debug('Session without auth')
-            return s
-        # Auth agent
-        token = self.__getToken(s)
-        if not token:
+    def __refreshToken(self):
+        """ Refresh current token. """
+        logger.info(f'Init refresh token ...')
+        host = self.config.get('agapi_host')
+        rq = f'{host}/auth/token'
+        rqRefresh = self.__agent.get(rq)
+        if 200 != rqRefresh.status_code:
+            parseApiError(rqRefresh)
             return False
+        responseRefresh = json.loads(rqRefresh.text)
+        token = self.__setToken(responseRefresh)
+        return token
+
+    def __createSessionAgent(self, token=None):
+        """ Create requests session. """
+        logger.debug('Creating new requests session')
+        agent=requests.Session()
+        agent.headers.update({'user-agent': 'AGBot-Session'})
+        if not token:
+            token = self.__getToken()
+            if not token:return False
         try:
-            s.headers.update({
-                'x-uid': token['uid'],
-                'x-sid': token['sid'],
-                'x-csrf': token['csrf']
-                })
+            agent.headers.update({'x-uid': token['uid'] })
         except Exception:
             logger.error("Invalid token keys", exc_info=True)
-        return s
+        self.__agent=agent
+        return agent
+
+    def getAgent(self):
+        """Retrive API request session."""
+        logger.info('Get request agent')
+        agent=self.__agent
+        if not agent:
+            agent=self.__createSessionAgent()
+        else:
+            ttl = self.cache.ttl(self.__cacheKey)
+            if ttl < 1:
+                agent=self.__createSessionAgent()
+            elif 1 <= ttl <= 900:
+                refreshedToken=self.__refreshToken()
+                agent = self.__createSessionAgent(refreshedToken)
+            if not agent:
+                logger.error('Unable to create agent!')
+                exit(1)
+        return agent
 
 
 def parseApiError(response):
     """ stampa errori api """
+    logger.debug('Parsing error')
     status = response.status_code
     try:
         problem = json.loads(response.text)
@@ -148,7 +162,7 @@ def parseApiError(response):
         for k,v in problem['errors'].items():
             msg+=f'\n\t -{k}:{v}'
     if status >=400 and status <500:
-        logger.debug(msg)
-    else:
         logger.warning(msg)
+    else:
+        logger.error(msg)
     return msg

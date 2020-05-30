@@ -28,13 +28,9 @@ class Base(object):
         """
         logger.debug('Init Base SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
         self.host = host
-        self.agent = rqagent
+        self.s = s
 
     #erp
     def getErp(self, erp_id:int, params=None):
@@ -43,7 +39,8 @@ class Base(object):
         """
         logger.debug(f'Get erp {erp_id}')
         rq = f'{self.host}/erp/{erp_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         erp = json.loads(r.text)
@@ -54,7 +51,8 @@ class Base(object):
         """Get all uoms."""
         logger.debug('Getting all unit of measure...')
         rq = f'{self.host}/settings/unitofmeasure'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uoms = json.loads(r.text)
@@ -66,7 +64,8 @@ class Base(object):
         """
         logger.debug(f'Reading family {uom_id}...')
         rq = f'{self.host}/settings/unitofmeasure/{uom_id}'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)
@@ -84,7 +83,8 @@ class Base(object):
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
         rq = f'{self.host}/settings/unitofmeasure/findByCode'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)
@@ -95,7 +95,8 @@ class Base(object):
         """Get all currencies."""
         logger.debug('Getting all unit of measure...')
         rq = f'{self.host}/settings/currency'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uoms = json.loads(r.text)
@@ -107,7 +108,8 @@ class Base(object):
         """
         logger.debug(f'Reading currency {currency_id}...')
         rq = f'{self.host}/settings/currency/{currency_id}'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)
@@ -125,7 +127,8 @@ class Base(object):
             new_params = dict(item.split("=") for item in query.split('&'))
             params = {**params, **new_params}     
         rq = f'{self.host}/settings/currency/findByCode'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         uom = json.loads(r.text)

@@ -10,7 +10,9 @@ __author__ = "Davide Pellegrino"
 __version__ = "1.1.4"
 __date__ = "2019-05-22"
 
-import json, logging
+import json
+import logging
+
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
@@ -19,19 +21,15 @@ class H2o(object):
     """
     H2o core class .
     """
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name):
         """
         Initialize main class.
         """
         logger.debug('Init H2o SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
         self.host = f'{host}/h2o'
-        self.agent = rqagent
+        self.s = s
 
     #customer
     def getCustomers(self, query=None):
@@ -40,7 +38,8 @@ class H2o(object):
         """
         logger.debug('Getting all customers')
         rq = '%s/customer' % (self.host)
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         customer = json.loads(r.text)
@@ -53,7 +52,8 @@ class H2o(object):
         logger.debug('Init creating customer...')
         print(payload)
         rq = f'{self.host}/customer'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -67,7 +67,8 @@ class H2o(object):
         """
         logger.debug(f'Reading customer {customer_id}...')        
         rq = f'{self.host}/customer/{customer_id}'
-        r = self.agent.get(rq)
+        agent=self.s.getAgent()
+        r = agent.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -84,7 +85,8 @@ class H2o(object):
             'erp_id': erp_id, 
             'ext_id': customer_id 
             }
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -101,7 +103,8 @@ class H2o(object):
         payload = {
             'code': code
             }
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -109,13 +112,14 @@ class H2o(object):
         logger.debug('Find customer %s' % customer['data']['id'])
         return customer
 
-    def updateCustomer(self, customer_id, payload):
+    def updateCustomer(self, customer_id:int, payload):
         """
         Update customer data.
         """
         logger.debug(f'Updating customer {customer_id}...')
         rq = f'{self.host}/customer/{customer_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -129,7 +133,8 @@ class H2o(object):
         """
         logger.debug(f'Init creating customer {customer_id} ERP xref ...')
         rq = f'{self.host}/customer/{customer_id}/xerp'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -143,7 +148,8 @@ class H2o(object):
         """
         logger.debug(f'Creating customer {customer_id} address')
         rq = f'{self.host}/customer/{customer_id}/address'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -156,7 +162,8 @@ class H2o(object):
         """
         logger.debug(f'Init updating {customer_id} address {address_id} ...')
         rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -169,7 +176,8 @@ class H2o(object):
         """
         logger.debug(f'Getting all customer {customer_id} addresses')
         rq = '{self.host}/customer/{customer_id}/address'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         addresses = json.loads(r.text)
@@ -181,7 +189,8 @@ class H2o(object):
         """
         logger.debug(f'Get customer {customer_id} address {address_id}')
         rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         address = json.loads(r.text)
@@ -199,7 +208,8 @@ class H2o(object):
             new_payload = dict(item.split("=") for item in query.split('&'))
             payload = {**payload, **new_payload}        
         rq = f'{self.host}/customer/{customer_id}/address/findByExtId'
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -213,7 +223,8 @@ class H2o(object):
         """
         logger.debug('Init creating competitor...')
         rq = f'{self.host}/competitor'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -227,7 +238,8 @@ class H2o(object):
         """
         logger.debug(f'Reading competitor {competitor_id}...')        
         rq = f'{self.host}/competitor/{competitor_id}'
-        r = self.agent.get(rq)
+        agent=self.s.getAgent()
+        r = agent.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -241,7 +253,8 @@ class H2o(object):
         """
         logger.debug('Creating order %s' % payload)
         rq = f'{self.host}/order'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -255,7 +268,8 @@ class H2o(object):
         """
         logger.debug('Getting orders.')
         rq = f'{self.host}/order'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         orders = json.loads(r.text)
@@ -267,7 +281,8 @@ class H2o(object):
         """
         logger.debug(f'Reading order {order_id}..')
         rq = f'{self.host}/order/{order_id}'
-        r = self.agent.get(rq)
+        agent=self.s.getAgent()
+        r = agent.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -284,7 +299,8 @@ class H2o(object):
             'erp_id': erp_id, 
             'ext_id': ext_id 
             }
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -298,7 +314,8 @@ class H2o(object):
         """
         logger.debug('Creating order detail')
         rq = f'{self.host}/order/{order_id}/detail'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -312,7 +329,8 @@ class H2o(object):
         """
         logger.debug('Getting order types.')
         rq = f'{self.host}/order/type'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         orderTypes = json.loads(r.text)
@@ -327,7 +345,8 @@ class H2o(object):
         payload={
             'name':name
         }
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             return False
         orderType = json.loads(r.text)
@@ -339,7 +358,8 @@ class H2o(object):
         """
         logger.debug('Creating new order type.')
         rq = f'{self.host}/order/type'
-        r = self.agent.get(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False

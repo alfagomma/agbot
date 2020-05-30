@@ -19,28 +19,25 @@ class Support(object):
     """
     support core class .
     """
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name):
         """
         Initialize main class.
         """
         logger.debug('Init support SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
         self.host = f'{host}/support'
-        self.agent = rqagent
-
+        self.s = s
+        
     #category
-    def createCategory(self, payload):
+    def createCategory(self, payload:object):
         """
         Create new category.
         """
         logger.debug('Init creating category...')
         rq = f'{self.host}/category'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -54,19 +51,21 @@ class Support(object):
         """
         logger.debug('Getting category')
         rq = f'{self.host}/category/{category_id}'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         category = json.loads(r.text)
         return category
 
-    def updateCategory(self, category_id, payload):
+    def updateCategory(self, category_id:int, payload:object):
         """
         Update category data.
         """
         logger.debug(f'Updating category {category_id}...')
         rq = f'{self.host}/category/{category_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -80,8 +79,10 @@ class Support(object):
         """
         logger.debug('Getting all categories')
         rq = f'{self.host}/category'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
+            parseApiError(r)
             return False
         category = json.loads(r.text)
         return category
@@ -93,7 +94,8 @@ class Support(object):
         """
         logger.debug('Init creating category type...')
         rq = f'{self.host}/category/type'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -107,7 +109,8 @@ class Support(object):
         """
         logger.debug('Read category types')
         rq = f'{self.host}/category/type/{type_id}'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         category = json.loads(r.text)
@@ -119,7 +122,8 @@ class Support(object):
         """
         logger.debug(f'Updating category type {type_id}...')
         rq = f'{self.host}/category/{type_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -133,7 +137,8 @@ class Support(object):
         """
         logger.debug('Getting all category types.')
         rq = f'{self.host}/category/type'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         category = json.loads(r.text)
@@ -146,7 +151,8 @@ class Support(object):
         """
         logger.debug('Init creating ticket...')
         rq = f'{self.host}/ticket'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -160,7 +166,8 @@ class Support(object):
         """
         logger.debug('Read ticket')
         rq = f'{self.host}/ticket/{ticket_id}'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         ticket = json.loads(r.text)
@@ -172,7 +179,8 @@ class Support(object):
         """
         logger.debug(f'Updating ticket {ticket_id}...')
         rq = f'{self.host}/ticket/{ticket_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -186,7 +194,8 @@ class Support(object):
         """
         logger.debug('Getting all ticket.')
         rq = f'{self.host}/ticket'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         tickets = json.loads(r.text)

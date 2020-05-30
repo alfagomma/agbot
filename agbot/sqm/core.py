@@ -10,7 +10,8 @@ __author__ = "Davide Pellegrino"
 __version__ = "1.2.0"
 __date__ = "2019-01-19"
 
-import json, logging
+import json
+import logging
 
 from agbot.session import Session, parseApiError
 
@@ -27,23 +28,19 @@ class Sqm(object):
         """
         logger.debug('Init SQM SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
         self.host = f'{host}/sqm'
-        self.agent = rqagent
-
+        self.s = s
 
     def createNorm(self, normName:str):
         """
         Create new norm.
         """
-        logger.debug('Creating norm %s' % normName)
-        rq = '%s/norm' % (self.host)
+        logger.debug(f'Creating norm {normName}')
+        rq = f'{self.host}/norm'
         payload = {'name':normName}
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -54,10 +51,11 @@ class Sqm(object):
         """
         Prende la norm dal nome.
         """
-        logger.debug('Get norm by name %s' % normName)
-        rq = '%s/norm/findByName' % (self.host)
+        logger.debug(f'Get norm by name {normName}')
+        rq = f'{self.host}/norm/findByName'
         payload = {'name':normName}
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False

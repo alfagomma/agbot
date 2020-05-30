@@ -10,7 +10,10 @@ __author__ = "Davide Pellegrino"
 __version__ = "2.1.1"
 __date__ = "2019-11-04"
 
-import json, logging, time
+import json
+import logging
+import time
+
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
@@ -25,13 +28,9 @@ class Element(object):
         """
         logger.debug('Init Element SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
         self.host = f'{host}/element'
-        self.agent = rqagent
+        self.s = s
 
     #item
     def getItem(self, item_id:int, params=None):
@@ -40,7 +39,8 @@ class Element(object):
         """
         logger.debug(f'Get item {item_id}')
         rq = f'{self.host}/item/{item_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         item = json.loads(r.text)
@@ -52,7 +52,8 @@ class Element(object):
         """
         logger.debug('Getting all the items')
         rq = '%s/item' % (self.host)
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         _items = json.loads(r.text)
@@ -64,7 +65,8 @@ class Element(object):
         """
         logger.debug('Creating item %s' % payload)
         rq = '%s/item' % (self.host)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -82,7 +84,8 @@ class Element(object):
         }
         if params:payload.update(params)
         rq = f'{self.host}/item/findByExtId'
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -100,7 +103,8 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
         rq = f'{self.host}/item/findByCode'
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -116,7 +120,8 @@ class Element(object):
             'erp_id' : erp_id,
             'ext_id' : ext_id
         }
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -128,7 +133,8 @@ class Element(object):
         """
         logger.debug(f'Updating item {item_id} with {payload}')
         rq = '%s/item/%s' % (self.host, item_id)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -140,7 +146,8 @@ class Element(object):
         """
         logger.debug(f'Patching item {item_id} with {payload}')
         rq = '%s/item/%s' % (self.host, item_id)
-        r = self.agent.patch(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.patch(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -153,7 +160,8 @@ class Element(object):
         """
         logger.debug(f'Creating item {item_id} attributes {payload}')
         rq = '%s/item/%s/attribute' % (self.host, item_id)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -165,7 +173,8 @@ class Element(object):
         """
         logger.debug(f'Sync item {item_id} norm {payload}')
         rq = '%s/item/%s/norm' % (self.host, item_id)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False 
@@ -181,7 +190,8 @@ class Element(object):
         fin = open(localFile, 'rb')
         files = {'src': fin}
         try:
-            r = self.agent.post(rq, files=files)
+            agent=self.s.getAgent()
+            r = agent.post(rq, files=files)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -198,7 +208,8 @@ class Element(object):
         logger.debug('')
         rq = f'{self.host}/item/{item_id}/cad/{cad_id}'
         try:
-            r = self.agent.delete(rq)
+            agent=self.s.getAgent()
+            r = agent.delete(rq)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -211,7 +222,8 @@ class Element(object):
         """ attach warehouse to the item"""
         logger.debug(f'Add xref item {item_id} {payload}')
         rq = f'{self.host}/item/{item_id}/xcompetitor'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -224,7 +236,8 @@ class Element(object):
             'code': code
         }
         rq = f'{self.host}/item/{item_id}/xcompetitor/{xref_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -234,7 +247,8 @@ class Element(object):
         """ Remove item competitor cross reference"""
         logger.debug(f'Removing competitor {competitor_id} from item {item_id}')
         rq = f'{self.host}/item/{item_id}/xcompetitor/{competitor_id}'
-        r = self.agent.delete(rq)
+        agent=self.s.getAgent()
+        r = agent.delete(rq)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -244,7 +258,8 @@ class Element(object):
         """ attach warehouse to the item"""
         logger.debug(f'Add warehouse at {item_id} - {payload}')
         rq = f'{self.host}/item/{item_id}/warehouse'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -254,7 +269,8 @@ class Element(object):
         """ attach warehouse to the item"""
         logger.debug(f'Remove warehouse {warehouse_id} @ item {item_id}')
         rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
-        r = self.agent.delete(rq)
+        agent=self.s.getAgent()
+        r = agent.delete(rq)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -264,7 +280,8 @@ class Element(object):
         """ attach warehouse to the item"""
         logger.debug(f'Patching item {item_id}@warehouse {warehouse_id} - {payload}')
         rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
-        r = self.agent.patch(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.patch(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -275,7 +292,8 @@ class Element(object):
         """ crea un nuovo attributo """
         logger.debug('Creating new attribute %s' % payload)
         rq = f'{self.host}/attribute'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -289,7 +307,8 @@ class Element(object):
         """
         logger.debug('Getting all the attributes.')
         rq = f'{self.host}/attribute'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         attributes = json.loads(r.text)
@@ -299,7 +318,8 @@ class Element(object):
         """ Attribute by id """
         logger.debug(f'Get attribute {attribute_id}')
         rq = f'{self.host}/attribute/{attribute_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -315,7 +335,8 @@ class Element(object):
             payload = {**payload, **new_payload}
         logger.debug(f'Get attribute {attribute_name}')
         rq = f'{self.host}/attribute/findByName'
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -327,7 +348,8 @@ class Element(object):
         """
         logger.debug(f'Updating attribute {attribute_id} ...')
         rq = f'{self.host}/attribute/{attribute_id}'
-        r = self.agent.post(rq, json=payload) 
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload) 
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -339,7 +361,8 @@ class Element(object):
         """ crea una nuova famiglia """
         logger.debug('Creating new family %s' % payload)
         rq = '%s/family' % (self.host)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -353,7 +376,8 @@ class Element(object):
         """
         logger.debug(f'Getting all the families with params {params}')
         rq = '%s/family' % (self.host)
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         families = json.loads(r.text)
@@ -365,7 +389,8 @@ class Element(object):
         """
         logger.debug(f'Reading family {family_id}')
         rq = '%s/family/%s' % (self.host, family_id)
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         _family = json.loads(r.text)
@@ -377,7 +402,8 @@ class Element(object):
         """
         logger.debug('Updating family %s ...' % family_id)
         rq = '%s/family/%s' % (self.host, family_id)
-        r = self.agent.post(rq, json=payload) 
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload) 
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -394,7 +420,8 @@ class Element(object):
             payload = {**payload, **new_payload}
         logger.debug('Get family %s' % family_code)
         rq = '%s/family/findByCode' % (self.host)
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -407,7 +434,8 @@ class Element(object):
         logger.debug(f'Patching family {family_id} ')
         rq = '%s/family/%s' % (self.host, family_id)
         try:
-            r = self.agent.patch(rq, json=payload)
+            agent=self.s.getAgent()
+            r = agent.patch(rq, json=payload)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -426,7 +454,8 @@ class Element(object):
             'category_id': category_id
             }
         try:
-            r = self.agent.patch(rq, json=payload)
+            agent=self.s.getAgent()
+            r = agent.patch(rq, json=payload)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -445,7 +474,8 @@ class Element(object):
         files = {'src': fin}
         #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
         try:
-            r = self.agent.post(rq, files=files)
+            agent=self.s.getAgent()
+            r = agent.post(rq, files=files)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -465,7 +495,8 @@ class Element(object):
         files = {'src': fin}
         #files = {'src': ('test.cad', open(filepath, 'rb'), 'image/png')}
         try:
-            r = self.agent.post(rq, files=files)
+            agent=self.s.getAgent()
+            r = agent.post(rq, files=files)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -485,7 +516,8 @@ class Element(object):
         payload = {
             'norm_id' : norm_id
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -501,7 +533,8 @@ class Element(object):
         payload = {
             'quality_id' : quality_id
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -518,7 +551,8 @@ class Element(object):
         }
         rq = f'{self.host}/family/{family_id}/feature'
         try:
-            r = self.agent.post(rq, json=payload)
+            agent=self.s.getAgent()
+            r = agent.post(rq, json=payload)
         except Exception:
             logger.exception('Exception occured')
             return False
@@ -536,7 +570,8 @@ class Element(object):
         payload = {
             'attribute_id' : attribute_id
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -551,7 +586,8 @@ class Element(object):
         payload = {
             'attribute_id' : attribute_id
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False
@@ -567,7 +603,8 @@ class Element(object):
         payload = {
             'name' : feature_name
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -583,7 +620,8 @@ class Element(object):
             'name' : feature_name
         }
         rq = f'{self.host}/feature/findByName'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -595,7 +633,8 @@ class Element(object):
         """ crea una nuova tabella """
         logger.debug('Creating new crtabel %s' % payload)
         rq = '%s/crtable' % (self.host)
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -609,7 +648,8 @@ class Element(object):
         """
         logger.debug(f'Get crtable {crtable_id}')
         rq = f'{self.host}/crtable/{crtable_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         crtable = json.loads(r.text)
@@ -621,7 +661,8 @@ class Element(object):
         """
         logger.debug(f'Get crtable slug {slug}')
         rq = f'{self.host}/crtable/findBySlug'
-        r = self.agent.get(rq, params={
+        agent=self.s.getAgent()
+        r = agent.get(rq, params={
             'slug' : slug
         })
         if 200 != r.status_code:
@@ -635,7 +676,8 @@ class Element(object):
         """
         logger.debug(f'Get crtable name {name}')
         rq = f'{self.host}/crtable/findByName'
-        r = self.agent.get(rq, params={
+        agent=self.s.getAgent()
+        r = agent.get(rq, params={
             'name' : name
         })
         if 200 != r.status_code:
@@ -649,7 +691,8 @@ class Element(object):
         """ crea nuovo parametro di pinzatura per tabella """
         logger.debug('Creating new crimping %s' % payload)
         rq = f'{self.host}/crtable/{crtable_id}/crimping'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -663,7 +706,8 @@ class Element(object):
         """
         logger.debug(f'Get crimping {crimping_id} from table {crtable_id}')
         rq = f'{self.host}/crtable/{crtable_id}/crimping/{crimping_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         crtable = json.loads(r.text)
@@ -676,7 +720,8 @@ class Element(object):
         """
         logger.debug('Search hub by name %s' % hub_name)
         rq = f'{self.host}/hub/findByName?name={hub_name}'
-        r = self.agent.get(rq)
+        agent=self.s.getAgent()
+        r = agent.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -690,7 +735,8 @@ class Element(object):
         logger.debug('Creating new hub with name %s' % hub_name)
         rq = f'{self.host}/hub'
         payload = {'name':hub_name}
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -708,7 +754,8 @@ class Element(object):
             'hub_id': hub_id,
             'name':category_name
             }
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -721,7 +768,8 @@ class Element(object):
         """
         logger.debug('Search category by name %s' % category_name)
         rq = '%s/category/findByName?name=%s' % (self.host, category_name)
-        r = self.agent.get(rq)
+        agent=self.s.getAgent()
+        r = agent.get(rq)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -737,7 +785,8 @@ class Element(object):
         fin = open(localFile, 'rb')
         files = {'src': fin}
         try:
-            r = self.agent.post(rq, files=files)
+            agent=self.s.getAgent()
+            r = agent.post(rq, files=files)
         except Exception:
             logging.exception("Exception occurred")
             return False
@@ -752,7 +801,8 @@ class Element(object):
         """ Get catalog by ID """
         logger.debug(f'List catalogs')
         rq = f'{self.host}/catalog'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         logger.debug(r)
         if 200 != r.status_code:
             return False
@@ -764,7 +814,8 @@ class Element(object):
         logger.debug(f'Get catalog {catalog_id}')
         rq = f'{self.host}/catalog/{catalog_id}'
         logger.debug(rq)
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         logger.debug(r)
         if 200 != r.status_code:
             return False
@@ -775,7 +826,8 @@ class Element(object):
         """ Get catalog tree by ID """
         logger.debug(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/catalog/{catalog_id}/tree/{tree_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         tree = json.loads(r.text)
@@ -785,7 +837,8 @@ class Element(object):
         """ Get catalog tree leaves """
         logger.debug(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/leaf'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         leaves = json.loads(r.text)
@@ -795,7 +848,8 @@ class Element(object):
         """ Get catalog tree leaf ID """
         logger.debug(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/leaf/{leaf_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         leaf = json.loads(r.text)
@@ -808,7 +862,8 @@ class Element(object):
         """
         logger.debug('Reading all warehouses')
         rq = f'{self.host}/warehouse'
-        r = self.agent.get(rq, params=query)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
         warehouses = json.loads(r.text)
@@ -818,7 +873,8 @@ class Element(object):
         """Get warehouse details"""
         logger.debug(f'Get warehouse {warehouse_id}')
         rq = f'{self.host}/warehouse/{warehouse_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         warehouse = json.loads(r.text)
@@ -830,7 +886,8 @@ class Element(object):
         """
         logger.debug(f'Creating new warehouse {payload}')
         rq = f'{self.host}/warehouse'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -843,14 +900,15 @@ class Element(object):
         """
         logger.debug(f'Updateing warehouse {warehouse_id} - {payload}')
         rq = f'{self.host}/warehouse/{warehouse_id}'
-        r = self.agent.post(rq, json=payload)
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
         warehouse = json.loads(r.text)
         return warehouse
     
-    def getWarehouseFromName(self, name, params=None):
+    def getWarehouseFromName(self, name:str, params=None):
         """read warehouse from name"""
         logger.debug(f'Search warehouse from {name}')
         payload ={
@@ -860,7 +918,8 @@ class Element(object):
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}        
         rq = f'{self.host}/warehouse/findByName'
-        r = self.agent.get(rq, params=payload)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False

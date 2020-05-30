@@ -7,6 +7,7 @@ Support test API
 """
 
 import logging
+import time
 from agbot.support.core import Support
 
 logger = logging.getLogger()
@@ -26,32 +27,34 @@ class testSupport():
         """ test category fx."""
         logger.debug('Init test category')
         cat_list = self.s.listCategories('take=3')
-        logger.info(cat_list)
-        cat = self.s.readCategory(1, {'include':'type'})
-        logger.info(cat)
+        print(cat_list)
+        print('------------------------------------------')
+        time.sleep(30)
+        cat = self.s.readCategory(2, {'include':'type'})
+        print(cat)
 
     def categoryType(self):
         """ test category type fx."""
         logger.debug('Init test category type')
         catype_list = self.s.listCategoryTypes('take=3')
-        logger.info(catype_list)
+        print(catype_list)
         catype = self.s.readCategory(1, {'include':'type'})
-        logger.info(catype)
+        print(catype)
 
     def ticket(self):
         """ test ticket fx."""
         logger.debug('Init test ticket')
         tic_list = self.s.listCategoryTypes('take=3')
-        logger.info(tic_list)
+        print(tic_list)
         tick = self.s.readCategory(1, {'include':'type'})
-        logger.info(tick)        
+        print(tick)        
 
 
 def test():
     ts=testSupport()
     ts.category()
-    ts.categoryType()
-    ts.ticket()
+    # ts.categoryType()
+    # ts.ticket()
 
 if __name__ == '__main__':
     """ Do Test """  

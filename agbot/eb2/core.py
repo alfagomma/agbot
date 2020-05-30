@@ -25,13 +25,9 @@ class Eb2(object):
         """
         logger.debug('Init Eb2 SDK')
         s = Session(profile_name)
-        rqagent =  s.createAgent()
-        if not rqagent:
-            logger.error('Unable to start base core without valid session.')
-            exit(1)
         host=s.config.get('agapi_host')
-        self.host=f'{host}/eb2'
-        self.agent = rqagent
+        self.host = f'{host}/eb2'
+        self.s = s
 
     #company
     def getCompany(self, company_id:int, params=None):
@@ -40,7 +36,8 @@ class Eb2(object):
         """
         logger.debug(f'Get company {company_id}')
         rq = f'{self.host}/company/{company_id}'
-        r = self.agent.get(rq, params=params)
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=params)
         if 200 != r.status_code:
             return False
         company = json.loads(r.text)
@@ -51,20 +48,22 @@ class Eb2(object):
         Prende tutti gli companies.
         """
         logger.debug('Getting all the companies')
-        rq = '%s/company' % (self.host)
-        r = self.agent.get(rq, params=query)
+        rq = f'{self.host}/company'
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=query)
         if 200 != r.status_code:
             return False
-        _companies = json.loads(r.text)
-        return _companies
+        companies = json.loads(r.text)
+        return companies
 
     def createCompany(self, payload):
         """
         Create new company.
         """
-        logger.debug('Creating company %s' % payload)
-        rq = '%s/company' % (self.host)
-        r = self.agent.post(rq, json=payload)
+        logger.debug(f'Creating company {payload}')
+        rq = f'{self.host}/company'
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 201 != r.status_code:
             parseApiError(r)
             return False
@@ -83,8 +82,9 @@ class Eb2(object):
         if params:
             new_payload = dict(company.split("=") for company in params.split('&'))
             payload = {**payload, **new_payload}        
-        rq = '%s/company/findByExtId' % (self.host)
-        r = self.agent.get(rq, params=payload)
+        rq = f'{self.host}/company/findByExtId'
+        agent=self.s.getAgent()
+        r = agent.get(rq, params=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
@@ -95,8 +95,9 @@ class Eb2(object):
         Update company.
         """
         logger.debug(f'Updating company {company_id} with {payload}')
-        rq = '%s/company/%s' % (self.host, company_id)
-        r = self.agent.post(rq, json=payload)
+        rq = f'{self.host}/company/{company_id}'
+        agent=self.s.getAgent()
+        r = agent.post(rq, json=payload)
         if 200 != r.status_code:
             parseApiError(r)
             return False
