@@ -7,6 +7,7 @@ Base test
 """
 
 import logging
+
 from agbot.base.core import Base
 
 logger = logging.getLogger()
@@ -15,14 +16,24 @@ ch = logging.StreamHandler()
 ch.setLevel(logging.DEBUG)
 logger.addHandler(ch)
 
+class testBase():
+    """ Test base """
+
+    def __init__(self):
+        """init"""
+        self.b = Base()
+
+    def uom(self):
+        """unit of measure tests."""
+        logger.debug('Init test category')
+        uoms = self.b.getUoms('take=5')
+        print(uoms)
+
 def test():
     """ test Base class."""
-    # import argparse
-    logger.debug('Init test')
-    b = Base()
-    uoms = b.getUoms('take=5')
-    logger.info(uoms)
-
+    ts=testBase()
+    ts.uom()
+    
 if __name__ == '__main__':
     """ Do Test """  
     test()
