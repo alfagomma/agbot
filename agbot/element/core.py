@@ -22,7 +22,7 @@ class Element(object):
     Element core class .
     """
 
-    def __init__(self, profile_name=False):
+    def __init__(self, profile_name=None):
         """
         Initialize main class with this and that.
         """

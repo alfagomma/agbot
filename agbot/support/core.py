@@ -19,7 +19,7 @@ class Support(object):
     """
     support core class .
     """
-    def __init__(self, profile_name):
+    def __init__(self, profile_name=None):
         """
         Initialize main class.
         """

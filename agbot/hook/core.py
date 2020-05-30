@@ -10,7 +10,10 @@ __author__ = "Davide Pellegrino"
 __version__ = "1.1.1"
 __date__ = "2019-06-11"
 
-import json, logging, time
+import json
+import logging
+import time
+
 from agbot.session import Session, parseApiError
 
 logger = logging.getLogger(__name__)
