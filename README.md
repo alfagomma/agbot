@@ -1,4 +1,4 @@
-PYAGBOT v2.0-beta
+PYAGBOT v3.0-beta
 ====================
 
 Official AGCloud Python library
