@@ -9,31 +9,43 @@ H2O test
 import logging
 
 from agbot.h2o.core import H2o
-
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
  
-class testH2o():
+class test():
     """test h2o"""
 
-    def __init__(self):
+    def __init__(self, profile_name):
         """ init """
-        self.h=H2o()
+        logging.debug(f'Init test {profile_name}')
+        self.h=H2o(profile_name)
 
     def customer(self):
         """test customer"""
+        logging.debug('Init test customer')
         customers = self.h.getCustomers('take=5')
-        print(customers)
+        logging.info(customers)
+        return True
 
 
-def test():
-    """ test H2o class."""
-    ts=testH2o()
-    ts.customer()
+def main(args):
+    """ start testing """
+    logging.basicConfig(level=logging.INFO)
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+    logging.debug(f'Init {__file__}')
+    t = test(profile_name=args.profile)
+    for atr in args.test:
+        if hasattr(t, atr):getattr(t, atr)()
+    return
+    
+def parse_args():
+    """Parse the args from main."""
+    import argparse
+    parser = argparse.ArgumentParser(description='Testing support')
+    parser.add_argument("--profile", type=str, help='Use specific profile env')
+    parser.add_argument("-t", "--test", nargs='+', help='What can I do for you?', required=True)
+    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    """ Do Test """  
-    test()
+    args = parse_args()
+    main(args)

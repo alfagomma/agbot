@@ -15,8 +15,6 @@ import logging
 
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
-
 class H2o(object):
     """
     H2o core class .
@@ -25,7 +23,7 @@ class H2o(object):
         """
         Initialize main class.
         """
-        logger.debug('Init H2o SDK')
+        logging.info('Init H2o SDK')
         s = Session(profile_name)
         host=s.config.get('agapi_host')
         self.host = f'{host}/h2o'
@@ -36,7 +34,7 @@ class H2o(object):
         """
         Read all customers.
         """
-        logger.debug('Getting all customers')
+        logging.info('Getting all customers')
         rq = '%s/customer' % (self.host)
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -49,7 +47,7 @@ class H2o(object):
         """
         Create new customer.
         """
-        logger.debug('Init creating customer...')
+        logging.info('Init creating customer...')
         print(payload)
         rq = f'{self.host}/customer'
         agent=self.s.getAgent()
@@ -58,14 +56,14 @@ class H2o(object):
             parseApiError(r)
             return False
         customer = json.loads(r.text)
-        logger.info('Customer %s created' % customer['data']['id'])
+        logging.info('Customer %s created' % customer['data']['id'])
         return customer
 
     def getCustomer(self, customer_id:int):
         """
         Get customer by id.
         """
-        logger.debug(f'Reading customer {customer_id}...')        
+        logging.info(f'Reading customer {customer_id}...')        
         rq = f'{self.host}/customer/{customer_id}'
         agent=self.s.getAgent()
         r = agent.get(rq)
@@ -79,7 +77,7 @@ class H2o(object):
         """
         Read customer from erp external ID
         """
-        logger.debug(f'Reading customer {customer_id} for erp {erp_id}')
+        logging.info(f'Reading customer {customer_id} for erp {erp_id}')
         rq = f'{self.host}/customer/findByErp'
         payload = {
             'erp_id': erp_id, 
@@ -91,14 +89,14 @@ class H2o(object):
             parseApiError(r)
             return False
         customer = json.loads(r.text)
-        logger.debug('Find customer %s' % customer['data']['id'])
+        logging.info('Find customer %s' % customer['data']['id'])
         return customer
     
     def getCustomerFromTax(self, code):
         """
         Read customer from tax code.
         """
-        logger.debug(f'Reading customer from tax code {code}')
+        logging.info(f'Reading customer from tax code {code}')
         rq = f'{self.host}/customer/findByTax'
         payload = {
             'code': code
@@ -109,14 +107,14 @@ class H2o(object):
             parseApiError(r)
             return False
         customer = json.loads(r.text)
-        logger.debug('Find customer %s' % customer['data']['id'])
+        logging.info('Find customer %s' % customer['data']['id'])
         return customer
 
     def updateCustomer(self, customer_id:int, payload):
         """
         Update customer data.
         """
-        logger.debug(f'Updating customer {customer_id}...')
+        logging.info(f'Updating customer {customer_id}...')
         rq = f'{self.host}/customer/{customer_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -124,14 +122,14 @@ class H2o(object):
             parseApiError(r)
             return False
         customer = json.loads(r.text)
-        logger.debug(f'Updated customer {customer_id}')
+        logging.info(f'Updated customer {customer_id}')
         return customer
 
     def createCustomerXerp(self, customer_id:int, payload):
         """
         Update customer ERP Xrefs.
         """
-        logger.debug(f'Init creating customer {customer_id} ERP xref ...')
+        logging.info(f'Init creating customer {customer_id} ERP xref ...')
         rq = f'{self.host}/customer/{customer_id}/xerp'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -146,7 +144,7 @@ class H2o(object):
         """
         Create new customer address
         """
-        logger.debug(f'Creating customer {customer_id} address')
+        logging.info(f'Creating customer {customer_id} address')
         rq = f'{self.host}/customer/{customer_id}/address'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -160,7 +158,7 @@ class H2o(object):
         """
         Update customer address.
         """
-        logger.debug(f'Init updating {customer_id} address {address_id} ...')
+        logging.info(f'Init updating {customer_id} address {address_id} ...')
         rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -174,7 +172,7 @@ class H2o(object):
         """
         List customer addresses.
         """
-        logger.debug(f'Getting all customer {customer_id} addresses')
+        logging.info(f'Getting all customer {customer_id} addresses')
         rq = '{self.host}/customer/{customer_id}/address'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -187,7 +185,7 @@ class H2o(object):
         """
         Get customer address.
         """
-        logger.debug(f'Get customer {customer_id} address {address_id}')
+        logging.info(f'Get customer {customer_id} address {address_id}')
         rq = f'{self.host}/customer/{customer_id}/address/{address_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -200,7 +198,7 @@ class H2o(object):
         """
         List customer addresses.
         """
-        logger.debug(f'Search customer {customer_id} address ext_id {ext_id}.')
+        logging.info(f'Search customer {customer_id} address ext_id {ext_id}.')
         payload ={
             'ext_id' : ext_id
         }
@@ -221,7 +219,7 @@ class H2o(object):
         """
         Create new competitor.
         """
-        logger.debug('Init creating competitor...')
+        logging.info('Init creating competitor...')
         rq = f'{self.host}/competitor'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -229,14 +227,14 @@ class H2o(object):
             parseApiError(r)
             return False
         competitor = json.loads(r.text)
-        logger.info('Competitor %s created' % competitor['data']['id'])
+        logging.info('Competitor %s created' % competitor['data']['id'])
         return competitor
 
     def getCompetitor(self, competitor_id:int):
         """
         Get competitor by id.
         """
-        logger.debug(f'Reading competitor {competitor_id}...')        
+        logging.info(f'Reading competitor {competitor_id}...')        
         rq = f'{self.host}/competitor/{competitor_id}'
         agent=self.s.getAgent()
         r = agent.get(rq)
@@ -251,7 +249,7 @@ class H2o(object):
         """
         Create new order.
         """
-        logger.debug('Creating order %s' % payload)
+        logging.info('Creating order %s' % payload)
         rq = f'{self.host}/order'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -259,14 +257,14 @@ class H2o(object):
             parseApiError(r)
             return False
         order = json.loads(r.text)
-        logger.info('Order %s created' % order['data']['id'])
+        logging.info('Order %s created' % order['data']['id'])
         return order
 
     def getOrders(self, query=None):
         """
         Read all orders.
         """
-        logger.debug('Getting orders.')
+        logging.info('Getting orders.')
         rq = f'{self.host}/order'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -279,7 +277,7 @@ class H2o(object):
         """
         Get order by id
         """
-        logger.debug(f'Reading order {order_id}..')
+        logging.info(f'Reading order {order_id}..')
         rq = f'{self.host}/order/{order_id}'
         agent=self.s.getAgent()
         r = agent.get(rq)
@@ -293,7 +291,7 @@ class H2o(object):
         """
         Read order from erp external ID.
         """
-        logger.debug(f'Reading order {ext_id} for erp {erp_id}')
+        logging.info(f'Reading order {ext_id} for erp {erp_id}')
         rq = f'{self.host}/order/findByErp'
         payload = {
             'erp_id': erp_id, 
@@ -305,14 +303,14 @@ class H2o(object):
             parseApiError(r)
             return False
         order = json.loads(r.text)
-        logger.debug('Find order %s' % order['data']['id'])
+        logging.info('Find order %s' % order['data']['id'])
         return order
 
     def createOrderDetail(self, order_id:int, payload):
         """
         Create order detail.
         """
-        logger.debug('Creating order detail')
+        logging.info('Creating order detail')
         rq = f'{self.host}/order/{order_id}/detail'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -327,7 +325,7 @@ class H2o(object):
         """
         Read all order types.
         """
-        logger.debug('Getting order types.')
+        logging.info('Getting order types.')
         rq = f'{self.host}/order/type'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -340,7 +338,7 @@ class H2o(object):
         """
         Get order type by name.
         """
-        logger.debug('Getting order types.')
+        logging.info('Getting order types.')
         rq = f'{self.host}/order/type/findByName'
         payload={
             'name':name
@@ -356,7 +354,7 @@ class H2o(object):
         """
         Create new order type.
         """
-        logger.debug('Creating new order type.')
+        logging.info('Creating new order type.')
         rq = f'{self.host}/order/type'
         agent=self.s.getAgent()
         r = agent.get(rq, json=payload)
@@ -364,5 +362,5 @@ class H2o(object):
             parseApiError(r)
             return False
         orderType = json.loads(r.text)
-        logger.info(f"Order type {orderType['data']['id']} created")
+        logging.info(f"Order type {orderType['data']['id']} created")
         return orderType        

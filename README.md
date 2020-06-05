@@ -19,6 +19,7 @@ NOTE
 -----------
 
 - sessionless
+- fix logging
 
 
 

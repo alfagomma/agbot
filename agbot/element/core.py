@@ -16,7 +16,6 @@ import time
 
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
 class Element(object):
     """
     Element core class .
@@ -26,7 +25,7 @@ class Element(object):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Element SDK')
+        logging.info('Init Element SDK')
         s = Session(profile_name)
         host=s.config.get('agapi_host')
         self.host = f'{host}/element'
@@ -37,7 +36,7 @@ class Element(object):
         """
         Legge un item dal suo id.
         """
-        logger.debug(f'Get item {item_id}')
+        logging.info(f'Get item {item_id}')
         rq = f'{self.host}/item/{item_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -50,7 +49,7 @@ class Element(object):
         """
         Prende tutti gli items.
         """
-        logger.debug('Getting all the items')
+        logging.info('Getting all the items')
         rq = '%s/item' % (self.host)
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -63,7 +62,7 @@ class Element(object):
         """
         Create new item.
         """
-        logger.debug('Creating item %s' % payload)
+        logging.info('Creating item %s' % payload)
         rq = '%s/item' % (self.host)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -71,14 +70,14 @@ class Element(object):
             parseApiError(r)
             return False
         item = json.loads(r.text)
-        logger.info('Create item %s' % item['data']['id'])
+        logging.info('Create item %s' % item['data']['id'])
         return item
 
     def getItemFromExt_id(self, ext_id:str, params={}):
         """
         Get item from ext_id.
         """
-        logger.debug(f'Search item ext_id {ext_id}.')
+        logging.info(f'Search item ext_id {ext_id}.')
         payload ={
             'ext_id' : ext_id
         }
@@ -95,7 +94,7 @@ class Element(object):
         """
         Get item from code
         """
-        logger.debug(f'Search item code {item_code}.')
+        logging.info(f'Search item code {item_code}.')
         payload ={
             'code' : item_code
         }
@@ -114,7 +113,7 @@ class Element(object):
         """
         Get item from ext_id of Erp.
         """
-        logger.debug(f'Search item ext_id {ext_id} for erp {erp_id}.')
+        logging.info(f'Search item ext_id {ext_id} for erp {erp_id}.')
         rq = '%s/item/findByErpExtId' % (self.host)
         payload = {
             'erp_id' : erp_id,
@@ -131,7 +130,7 @@ class Element(object):
         """
         Update item.
         """
-        logger.debug(f'Updating item {item_id} with {payload}')
+        logging.info(f'Updating item {item_id} with {payload}')
         rq = '%s/item/%s' % (self.host, item_id)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -144,7 +143,7 @@ class Element(object):
         """
         Patch know item field.
         """
-        logger.debug(f'Patching item {item_id} with {payload}')
+        logging.info(f'Patching item {item_id} with {payload}')
         rq = '%s/item/%s' % (self.host, item_id)
         agent=self.s.getAgent()
         r = agent.patch(rq, json=payload)
@@ -158,7 +157,7 @@ class Element(object):
         """
         Create new item attributes.
         """
-        logger.debug(f'Creating item {item_id} attributes {payload}')
+        logging.info(f'Creating item {item_id} attributes {payload}')
         rq = '%s/item/%s/attribute' % (self.host, item_id)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -171,21 +170,21 @@ class Element(object):
         """
         Sync item norm.
         """
-        logger.debug(f'Sync item {item_id} norm {payload}')
+        logging.info(f'Sync item {item_id} norm {payload}')
         rq = '%s/item/%s/norm' % (self.host, item_id)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
         if 204 != r.status_code:
             parseApiError(r)
             return False 
-        logger.info(f'Sync item {item_id} norms complete')              
+        logging.info(f'Sync item {item_id} norms complete')              
         return True
 
     def itemAddCad(self, item_id:int, localFile):
         """ 
         Aggiunge un file cad all'item. 
         """
-        logger.debug('')
+        logging.info('')
         rq = '%s/item/%s/cad' % (self.host, item_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
@@ -205,7 +204,7 @@ class Element(object):
         """ 
         Elimina un file cad dall'item. 
         """
-        logger.debug('')
+        logging.info('')
         rq = f'{self.host}/item/{item_id}/cad/{cad_id}'
         try:
             agent=self.s.getAgent()
@@ -220,7 +219,7 @@ class Element(object):
 
     def itemAddCompetitor(self, item_id:int, payload):
         """ attach warehouse to the item"""
-        logger.debug(f'Add xref item {item_id} {payload}')
+        logging.info(f'Add xref item {item_id} {payload}')
         rq = f'{self.host}/item/{item_id}/xcompetitor'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -231,7 +230,7 @@ class Element(object):
 
     def itemUpdateCompetitor(self, item_id:int, xref_id:int, code):
         """ update item competitor cross reference"""
-        logger.debug(f'Update competitor {xref_id} with code {code}')
+        logging.info(f'Update competitor {xref_id} with code {code}')
         payload={
             'code': code
         }
@@ -245,7 +244,7 @@ class Element(object):
 
     def itemDeleteCompetitor(self, item_id:int, competitor_id:int):
         """ Remove item competitor cross reference"""
-        logger.debug(f'Removing competitor {competitor_id} from item {item_id}')
+        logging.info(f'Removing competitor {competitor_id} from item {item_id}')
         rq = f'{self.host}/item/{item_id}/xcompetitor/{competitor_id}'
         agent=self.s.getAgent()
         r = agent.delete(rq)
@@ -256,7 +255,7 @@ class Element(object):
 
     def itemAddWarehouse(self, item_id:int, payload):
         """ attach warehouse to the item"""
-        logger.debug(f'Add warehouse at {item_id} - {payload}')
+        logging.info(f'Add warehouse at {item_id} - {payload}')
         rq = f'{self.host}/item/{item_id}/warehouse'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -267,7 +266,7 @@ class Element(object):
 
     def itemRemoveWarehouse(self, item_id:int, warehouse_id:int):
         """ attach warehouse to the item"""
-        logger.debug(f'Remove warehouse {warehouse_id} @ item {item_id}')
+        logging.info(f'Remove warehouse {warehouse_id} @ item {item_id}')
         rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
         agent=self.s.getAgent()
         r = agent.delete(rq)
@@ -278,7 +277,7 @@ class Element(object):
 
     def itemPatchWarehouse(self, item_id:int, warehouse_id:int, payload):
         """ attach warehouse to the item"""
-        logger.debug(f'Patching item {item_id}@warehouse {warehouse_id} - {payload}')
+        logging.info(f'Patching item {item_id}@warehouse {warehouse_id} - {payload}')
         rq = f'{self.host}/item/{item_id}/warehouse/{warehouse_id}'
         agent=self.s.getAgent()
         r = agent.patch(rq, json=payload)
@@ -290,7 +289,7 @@ class Element(object):
     #attribute
     def createAttribute(self, payload):
         """ crea un nuovo attributo """
-        logger.debug('Creating new attribute %s' % payload)
+        logging.info('Creating new attribute %s' % payload)
         rq = f'{self.host}/attribute'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -298,14 +297,14 @@ class Element(object):
             parseApiError(r)
             return False
         attribute = json.loads(r.text)
-        logger.info('Create attribute %s' % attribute['data']['id'])
+        logging.info('Create attribute %s' % attribute['data']['id'])
         return attribute
 
     def getAttributes(self, query=None):
         """
         Read all attributes.
         """
-        logger.debug('Getting all the attributes.')
+        logging.info('Getting all the attributes.')
         rq = f'{self.host}/attribute'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -316,7 +315,7 @@ class Element(object):
 
     def getAttribute(self, attribute_id:int, params=None):
         """ Attribute by id """
-        logger.debug(f'Get attribute {attribute_id}')
+        logging.info(f'Get attribute {attribute_id}')
         rq = f'{self.host}/attribute/{attribute_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -333,7 +332,7 @@ class Element(object):
         if params:
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
-        logger.debug(f'Get attribute {attribute_name}')
+        logging.info(f'Get attribute {attribute_name}')
         rq = f'{self.host}/attribute/findByName'
         agent=self.s.getAgent()
         r = agent.get(rq, params=payload)
@@ -346,7 +345,7 @@ class Element(object):
         """
         Update attribute.
         """
-        logger.debug(f'Updating attribute {attribute_id} ...')
+        logging.info(f'Updating attribute {attribute_id} ...')
         rq = f'{self.host}/attribute/{attribute_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload) 
@@ -359,7 +358,7 @@ class Element(object):
     #family
     def createFamily(self, payload):
         """ crea una nuova famiglia """
-        logger.debug('Creating new family %s' % payload)
+        logging.info('Creating new family %s' % payload)
         rq = '%s/family' % (self.host)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -367,14 +366,14 @@ class Element(object):
             parseApiError(r)
             return False
         family = json.loads(r.text)
-        logger.info('Create family %s' % family['data']['id'])
+        logging.info('Create family %s' % family['data']['id'])
         return family
 
     def getFamilies(self, params=None):
         """
         Prende tutte le famiglie.
         """
-        logger.debug(f'Getting all the families with params {params}')
+        logging.info(f'Getting all the families with params {params}')
         rq = '%s/family' % (self.host)
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -387,7 +386,7 @@ class Element(object):
         """
         Legge la singola famiglia.
         """
-        logger.debug(f'Reading family {family_id}')
+        logging.info(f'Reading family {family_id}')
         rq = '%s/family/%s' % (self.host, family_id)
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -400,7 +399,7 @@ class Element(object):
         """
         Update family.
         """
-        logger.debug('Updating family %s ...' % family_id)
+        logging.info('Updating family %s ...' % family_id)
         rq = '%s/family/%s' % (self.host, family_id)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload) 
@@ -418,7 +417,7 @@ class Element(object):
         if params:
             new_payload = dict(item.split("=") for item in params.split('&'))
             payload = {**payload, **new_payload}
-        logger.debug('Get family %s' % family_code)
+        logging.info('Get family %s' % family_code)
         rq = '%s/family/findByCode' % (self.host)
         agent=self.s.getAgent()
         r = agent.get(rq, params=payload)
@@ -431,7 +430,7 @@ class Element(object):
         """
         Associa categoria a famiglia
         """
-        logger.debug(f'Patching family {family_id} ')
+        logging.info(f'Patching family {family_id} ')
         rq = '%s/family/%s' % (self.host, family_id)
         try:
             agent=self.s.getAgent()
@@ -448,7 +447,7 @@ class Element(object):
         """
         Associa categoria a famiglia
         """
-        logger.debug(f'Patching family {family_id} with category {category_id}')
+        logging.info(f'Patching family {family_id} with category {category_id}')
         rq = '%s/family/%s' % (self.host, family_id)
         payload = {
             'category_id': category_id
@@ -468,7 +467,7 @@ class Element(object):
         """ 
         Aggiorna cover famiglia. 
         """
-        logger.debug('Update family %s cover with file %s' % (family_id, localFile))
+        logging.info('Update family %s cover with file %s' % (family_id, localFile))
         rq = '%s/family/%s/cover' % (self.host, family_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
@@ -489,7 +488,7 @@ class Element(object):
         """ 
         Aggiorna HQ famiglia. 
         """
-        logger.debug('Update family %s hq with file %s' % (family_id, localFile))
+        logging.info('Update family %s hq with file %s' % (family_id, localFile))
         rq = '%s/family/%s/hq' % (self.host, family_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
@@ -511,7 +510,7 @@ class Element(object):
         Aggiunge una norma riconosciuta, alla famiglia.
         SUGGEST - USE syncFamilyNorm!
         """
-        logger.debug(f'Attaching norm {norm_id} at family {family_id} ...')
+        logging.info(f'Attaching norm {norm_id} at family {family_id} ...')
         rq = f"{self.host}/family/{family_id}/norm"
         payload = {
             'norm_id' : norm_id
@@ -528,7 +527,7 @@ class Element(object):
         Aggiunge una qualità alla famiglia
         SUGGEST - USE syncFamilyNorm!
         """
-        logger.debug(f'Attach quality {quality_id} at family {family_id}')
+        logging.info(f'Attach quality {quality_id} at family {family_id}')
         rq = f'{self.host}/family/{family_id}/quality'
         payload = {
             'quality_id' : quality_id
@@ -544,7 +543,7 @@ class Element(object):
         """
         Aggiunge una feature alla famiglia.
         """
-        logger.debug('Attaching feature %s at family %s' % (feature_id, family_id) )
+        logging.info('Attaching feature %s at family %s' % (feature_id, family_id) )
         payload = {
             'feature_id': feature_id,
             'description': description
@@ -554,7 +553,7 @@ class Element(object):
             agent=self.s.getAgent()
             r = agent.post(rq, json=payload)
         except Exception:
-            logger.exception('Exception occured')
+            logging.exception('Exception occured')
             return False
         if 204 != r.status_code:
             parseApiError(r)
@@ -565,7 +564,7 @@ class Element(object):
         """
         Add attribute to family.
         """
-        logger.debug(f'Attaching attribute {attribute_id} to family {family_id}...')
+        logging.info(f'Attaching attribute {attribute_id} to family {family_id}...')
         rq = f'{self.host}/family/{family_id}/attribute'
         payload = {
             'attribute_id' : attribute_id
@@ -581,7 +580,7 @@ class Element(object):
         """
         Add attribute to sorting
         """
-        logger.debug(f'Attaching attribute {attribute_id} to family {family_id} sorting...')
+        logging.info(f'Attaching attribute {attribute_id} to family {family_id} sorting...')
         rq = f'{self.host}/family/{family_id}/sorting'
         payload = {
             'attribute_id' : attribute_id
@@ -598,7 +597,7 @@ class Element(object):
         """
         Crea una nuova feature.
         """
-        logger.debug(f'Creating new feature with name {feature_name}')
+        logging.info(f'Creating new feature with name {feature_name}')
         rq = f'{self.host}/feature'
         payload = {
             'name' : feature_name
@@ -615,7 +614,7 @@ class Element(object):
         """
         Prende feature dal nome.
         """
-        logger.debug('Getting feature by name %s...' % feature_name)
+        logging.info('Getting feature by name %s...' % feature_name)
         params = {
             'name' : feature_name
         }
@@ -631,7 +630,7 @@ class Element(object):
     #crtable
     def createCrtable(self, payload):
         """ crea una nuova tabella """
-        logger.debug('Creating new crtabel %s' % payload)
+        logging.info('Creating new crtabel %s' % payload)
         rq = '%s/crtable' % (self.host)
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -639,14 +638,14 @@ class Element(object):
             parseApiError(r)
             return False
         crtable = json.loads(r.text)
-        logger.info('Create crtable %s' % crtable['data']['id'])
+        logging.info('Create crtable %s' % crtable['data']['id'])
         return crtable
 
     def getCrtable(self, crtable_id:int, params=None):
         """
         Legge una tabella dal suo id.
         """
-        logger.debug(f'Get crtable {crtable_id}')
+        logging.info(f'Get crtable {crtable_id}')
         rq = f'{self.host}/crtable/{crtable_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -659,7 +658,7 @@ class Element(object):
         """
         Legge una tabella dal suo slug.
         """
-        logger.debug(f'Get crtable slug {slug}')
+        logging.info(f'Get crtable slug {slug}')
         rq = f'{self.host}/crtable/findBySlug'
         agent=self.s.getAgent()
         r = agent.get(rq, params={
@@ -674,7 +673,7 @@ class Element(object):
         """
         Legge una tabella dal suo name.
         """
-        logger.debug(f'Get crtable name {name}')
+        logging.info(f'Get crtable name {name}')
         rq = f'{self.host}/crtable/findByName'
         agent=self.s.getAgent()
         r = agent.get(rq, params={
@@ -689,7 +688,7 @@ class Element(object):
     #crimping
     def createCrimping(self, crtable_id:int, payload):
         """ crea nuovo parametro di pinzatura per tabella """
-        logger.debug('Creating new crimping %s' % payload)
+        logging.info('Creating new crimping %s' % payload)
         rq = f'{self.host}/crtable/{crtable_id}/crimping'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -697,14 +696,14 @@ class Element(object):
             parseApiError(r)
             return False
         crimping = json.loads(r.text)
-        logger.info('Create crimping %s' % crimping['data']['id'])
+        logging.info('Create crimping %s' % crimping['data']['id'])
         return crimping
 
     def getCrimping(self, crtable_id:int, crimping_id:int, params=None):
         """
         Legge un parametro dalla tabella pinzatura.
         """
-        logger.debug(f'Get crimping {crimping_id} from table {crtable_id}')
+        logging.info(f'Get crimping {crimping_id} from table {crtable_id}')
         rq = f'{self.host}/crtable/{crtable_id}/crimping/{crimping_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -718,7 +717,7 @@ class Element(object):
         """ 
         Get hub from name
         """
-        logger.debug('Search hub by name %s' % hub_name)
+        logging.info('Search hub by name %s' % hub_name)
         rq = f'{self.host}/hub/findByName?name={hub_name}'
         agent=self.s.getAgent()
         r = agent.get(rq)
@@ -732,7 +731,7 @@ class Element(object):
         """ 
         Create new hub
         """
-        logger.debug('Creating new hub with name %s' % hub_name)
+        logging.info('Creating new hub with name %s' % hub_name)
         rq = f'{self.host}/hub'
         payload = {'name':hub_name}
         agent=self.s.getAgent()
@@ -748,7 +747,7 @@ class Element(object):
         """
         Crea un categoria.
         """
-        logger.debug('Creating new category with name %s at hub %s' % (category_name, hub_id))
+        logging.info('Creating new category with name %s at hub %s' % (category_name, hub_id))
         rq = '%s/category' % (self.host)
         payload = {
             'hub_id': hub_id,
@@ -766,7 +765,7 @@ class Element(object):
         """
         Prende categoria da nome.
         """
-        logger.debug('Search category by name %s' % category_name)
+        logging.info('Search category by name %s' % category_name)
         rq = '%s/category/findByName?name=%s' % (self.host, category_name)
         agent=self.s.getAgent()
         r = agent.get(rq)
@@ -780,7 +779,7 @@ class Element(object):
         """
         Aggiorna cover categoria.
         """
-        logger.debug('Update category %s cover with file %s' % (category_id, localFile))
+        logging.info('Update category %s cover with file %s' % (category_id, localFile))
         rq = '%s/category/%s/cover' % (self.host, category_id)
         fin = open(localFile, 'rb')
         files = {'src': fin}
@@ -799,11 +798,11 @@ class Element(object):
     #catalog
     def listCatalog(self, query=None):
         """ Get catalog by ID """
-        logger.debug(f'List catalogs')
+        logging.info(f'List catalogs')
         rq = f'{self.host}/catalog'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
-        logger.debug(r)
+        logging.info(r)
         if 200 != r.status_code:
             return False
         catalogs = json.loads(r.text)
@@ -811,12 +810,12 @@ class Element(object):
 
     def getCatalog(self, catalog_id:int, params=None):
         """ Get catalog by ID """
-        logger.debug(f'Get catalog {catalog_id}')
+        logging.info(f'Get catalog {catalog_id}')
         rq = f'{self.host}/catalog/{catalog_id}'
-        logger.debug(rq)
+        logging.info(rq)
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
-        logger.debug(r)
+        logging.info(r)
         if 200 != r.status_code:
             return False
         item = json.loads(r.text)
@@ -824,7 +823,7 @@ class Element(object):
 
     def getTree(self, catalog_id:int, tree_id:int, params=None):
         """ Get catalog tree by ID """
-        logger.debug(f'Get catalog tree {catalog_id}')
+        logging.info(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/catalog/{catalog_id}/tree/{tree_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -835,7 +834,7 @@ class Element(object):
 
     def getTreeLeaves(self, catalog_id:int, params=None):
         """ Get catalog tree leaves """
-        logger.debug(f'Get catalog tree {catalog_id}')
+        logging.info(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/leaf'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -846,7 +845,7 @@ class Element(object):
 
     def getTreeLeaf(self, catalog_id:int, tree_id:int, leaf_id:int, params=None):
         """ Get catalog tree leaf ID """
-        logger.debug(f'Get catalog tree {catalog_id}')
+        logging.info(f'Get catalog tree {catalog_id}')
         rq = f'{self.host}/leaf/{leaf_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -860,7 +859,7 @@ class Element(object):
         """
         Read all warehouse
         """
-        logger.debug('Reading all warehouses')
+        logging.info('Reading all warehouses')
         rq = f'{self.host}/warehouse'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -871,7 +870,7 @@ class Element(object):
 
     def getWarehouse(self, warehouse_id:int, params=None):
         """Get warehouse details"""
-        logger.debug(f'Get warehouse {warehouse_id}')
+        logging.info(f'Get warehouse {warehouse_id}')
         rq = f'{self.host}/warehouse/{warehouse_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -884,7 +883,7 @@ class Element(object):
         """ 
         Create new warehouse
         """
-        logger.debug(f'Creating new warehouse {payload}')
+        logging.info(f'Creating new warehouse {payload}')
         rq = f'{self.host}/warehouse'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -898,7 +897,7 @@ class Element(object):
         """ 
         Create new warehouse
         """
-        logger.debug(f'Updateing warehouse {warehouse_id} - {payload}')
+        logging.info(f'Updateing warehouse {warehouse_id} - {payload}')
         rq = f'{self.host}/warehouse/{warehouse_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -910,7 +909,7 @@ class Element(object):
     
     def getWarehouseFromName(self, name:str, params=None):
         """read warehouse from name"""
-        logger.debug(f'Search warehouse from {name}')
+        logging.info(f'Search warehouse from {name}')
         payload ={
             'name' : name
         }

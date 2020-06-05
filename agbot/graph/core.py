@@ -16,7 +16,6 @@ import time
 
 from agbot.session import Session, parseApiError
 
-logger = logging.getLogger(__name__)
 class Graph(object):
     """
     Graph Open Data core class .
@@ -25,11 +24,11 @@ class Graph(object):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Graph SDK')
+        logging.debug('Init Graph SDK')
         s = Session(profile_name)
         rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start base core without valid session.')
+            logging.error('Unable to start base core without valid session.')
             exit(1)
         host=s.config.get('aggraph_host')
         self.host = host
@@ -39,7 +38,7 @@ class Graph(object):
         """
         Read single language
         """
-        logger.debug(f'Get language {language_id}')
+        logging.debug(f'Get language {language_id}')
         rq = f'{self.host}/language/{language_id}'
         r = self.agent.get(rq, params=params)
         if 200 != r.status_code:
@@ -51,7 +50,7 @@ class Graph(object):
         """
         Read all public languages.
         """
-        logger.debug('Getting all the languages')
+        logging.debug('Getting all the languages')
         rq = '%s/language' % (self.host)
         r = self.agent.get(rq, params=query)
         if 200 != r.status_code:

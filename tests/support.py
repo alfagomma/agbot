@@ -11,52 +11,61 @@ import time
 
 from agbot.support.core import Support
 
-logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-logger.addHandler(ch)
-
-class testSupport():
+class test():
     """ test support """
 
-    def __init__(self):
+    def __init__(self, profile_name):
         """init"""
-        self.s = Support()
+        logging.debug(f'Init test {profile_name}')
+        self.s = Support(profile_name)
 
     def category(self):
         """ test category fx."""
-        logger.debug('Init test category')
+        logging.debug('Init test category')
         cat_list = self.s.listCategories('take=3')
-        print(cat_list)
-        print('------------------------------------------')
+        logging.info(cat_list)
         time.sleep(30)
         cat = self.s.readCategory(2, {'include':'type'})
-        print(cat)
+        logging.info(cat)
+        return True
 
-    def categoryType(self):
+    def category_type(self):
         """ test category type fx."""
-        logger.debug('Init test category type')
+        logging.debug('Init test category type')
         catype_list = self.s.listCategoryTypes('take=3')
-        print(catype_list)
+        logging.info(catype_list)
         catype = self.s.readCategory(1, {'include':'type'})
-        print(catype)
+        logging.info(catype)
+        return True
 
     def ticket(self):
         """ test ticket fx."""
-        logger.debug('Init test ticket')
-        tic_list = self.s.listCategoryTypes('take=3')
-        print(tic_list)
-        tick = self.s.readCategory(1, {'include':'type'})
-        print(tick)        
+        logging.debug('Init test ticket')
+        tic_list = self.s.listTicket('take=3')
+        logging.info(tic_list)
+        return True
 
 
-def test():
-    ts=testSupport()
-    ts.category()
-    # ts.categoryType()
-    # ts.ticket()
+def main(args):
+    """ start testing """
+    logging.basicConfig(level=logging.INFO)
+    if args.verbose:
+        logging.getLogger().setLevel(logging.DEBUG)
+    logging.debug(f'Init {__file__}')
+    t = test(profile_name=args.profile)
+    for atr in args.test:
+        if hasattr(t, atr):getattr(t, atr)()
+    return
+    
+def parse_args():
+    """Parse the args from main."""
+    import argparse
+    parser = argparse.ArgumentParser(description='Testing support')
+    parser.add_argument("--profile", type=str, help='Use specific profile env')
+    parser.add_argument("-t", "--test", nargs='+', help='What can I do for you?', required=True)
+    parser.add_argument("-v", "--verbose", help="increase output verbosity", action="store_true")
+    return parser.parse_args()
 
 if __name__ == '__main__':
-    """ Do Test """  
-    test()
+    args = parse_args()
+    main(args)

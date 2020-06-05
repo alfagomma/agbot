@@ -10,10 +10,10 @@ __author__ = "Davide Pellegrino"
 __version__ = "2.0.1"
 __date__ = "2020-03-16"
 
-import json, logging
-from agbot.session import Session, parseApiError
+import json
+import logging
 
-logger = logging.getLogger(__name__)
+from agbot.session import Session, parseApiError
 
 class Support(object):
     """
@@ -23,7 +23,7 @@ class Support(object):
         """
         Initialize main class.
         """
-        logger.debug('Init support SDK')
+        logging.info('Init support SDK')
         s = Session(profile_name)
         host=s.config.get('agapi_host')
         self.host = f'{host}/support'
@@ -34,7 +34,7 @@ class Support(object):
         """
         Create new category.
         """
-        logger.debug('Init creating category...')
+        logging.info('Init creating category...')
         rq = f'{self.host}/category'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -42,14 +42,14 @@ class Support(object):
             parseApiError(r)
             return False
         category = json.loads(r.text)
-        logger.info('Category %s created' % category['data']['id'])
+        logging.info('Category %s created' % category['data']['id'])
         return category
 
     def readCategory(self, category_id:int, query=None):
         """
         Read category.
         """
-        logger.debug('Getting category')
+        logging.info('Getting category')
         rq = f'{self.host}/category/{category_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -62,7 +62,7 @@ class Support(object):
         """
         Update category data.
         """
-        logger.debug(f'Updating category {category_id}...')
+        logging.info(f'Updating category {category_id}...')
         rq = f'{self.host}/category/{category_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -70,14 +70,14 @@ class Support(object):
             parseApiError(r)
             return False
         category = json.loads(r.text)
-        logger.debug(f'Updated category {category_id}')
+        logging.info(f'Updated category {category_id}')
         return category
 
     def listCategories(self, query=None):
         """
         Read all categories.
         """
-        logger.debug('Getting all categories')
+        logging.info('Getting all categories')
         rq = f'{self.host}/category'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -92,7 +92,7 @@ class Support(object):
         """
         Create new category type.
         """
-        logger.debug('Init creating category type...')
+        logging.info('Init creating category type...')
         rq = f'{self.host}/category/type'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -100,14 +100,14 @@ class Support(object):
             parseApiError(r)
             return False
         category = json.loads(r.text)
-        logger.info('Category %s created' % category['data']['id'])
+        logging.info('Category %s created' % category['data']['id'])
         return category
 
     def readCategoryType(self, type_id:int, query=None):
         """
         Read category type.
         """
-        logger.debug('Read category types')
+        logging.info('Read category types')
         rq = f'{self.host}/category/type/{type_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -120,7 +120,7 @@ class Support(object):
         """
         Update category type data.
         """
-        logger.debug(f'Updating category type {type_id}...')
+        logging.info(f'Updating category type {type_id}...')
         rq = f'{self.host}/category/{type_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -128,14 +128,14 @@ class Support(object):
             parseApiError(r)
             return False
         category = json.loads(r.text)
-        logger.debug(f'Updated category {type_id}')
+        logging.info(f'Updated category {type_id}')
         return category
 
     def listCategoryTypes(self, query=None):
         """
         Read all category types.
         """
-        logger.debug('Getting all category types.')
+        logging.info('Getting all category types.')
         rq = f'{self.host}/category/type'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -149,7 +149,7 @@ class Support(object):
         """
         Create new ticket.
         """
-        logger.debug('Init creating ticket...')
+        logging.info('Init creating ticket...')
         rq = f'{self.host}/ticket'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -157,14 +157,14 @@ class Support(object):
             parseApiError(r)
             return False
         ticket = json.loads(r.text)
-        logger.info('Ticket %s created' % ticket['data']['id'])
+        logging.info('Ticket %s created' % ticket['data']['id'])
         return ticket
 
     def readTicket(self, ticket_id:int, query=None):
         """
         Read ticket.
         """
-        logger.debug('Read ticket')
+        logging.info('Read ticket')
         rq = f'{self.host}/ticket/{ticket_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -177,7 +177,7 @@ class Support(object):
         """
         Update ticket.
         """
-        logger.debug(f'Updating ticket {ticket_id}...')
+        logging.info(f'Updating ticket {ticket_id}...')
         rq = f'{self.host}/ticket/{ticket_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -185,14 +185,14 @@ class Support(object):
             parseApiError(r)
             return False
         ticket = json.loads(r.text)
-        logger.debug(f'Updated ticket {ticket_id}')
+        logging.info(f'Updated ticket {ticket_id}')
         return ticket
 
     def listTicket(self, query=None):
         """
         Read all ticket.
         """
-        logger.debug('Getting all ticket.')
+        logging.info('Getting all ticket.')
         rq = f'{self.host}/ticket'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -200,4 +200,3 @@ class Support(object):
             return False
         tickets = json.loads(r.text)
         return tickets   
-

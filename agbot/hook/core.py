@@ -27,11 +27,11 @@ class Hook(object):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Hook')
+        logging.debug('Init Hook')
         s = Session(profile_name)
         rqagent =  s.createAgent()
         if not rqagent:
-            logger.error('Unable to start base core without valid session.')
+            logging.error('Unable to start base core without valid session.')
             exit(1)
         host=s.config.get('aghook_host')
         self.host = host
@@ -42,7 +42,7 @@ class Hook(object):
         """
         Call erp sap worker queue
         """
-        logger.debug(f'Calling erp sap queue')
+        logging.debug(f'Calling erp sap queue')
         rq = f'{self.host}/erp/sap/material'
         r = self.agent.post(rq, json=payload)
         if 201 != r.status_code:
@@ -55,7 +55,7 @@ class Hook(object):
         """
         Call erp sap customer worker queue
         """
-        logger.debug(f'Calling erp sap customer queue')
+        logging.debug(f'Calling erp sap customer queue')
         rq = f'{self.host}/erp/sap/customer'
         r = self.agent.post(rq, json=payload)
         if 201 != r.status_code:

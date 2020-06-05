@@ -12,8 +12,6 @@ __date__ = "2020-01-20"
 
 import json, logging, time
 from agbot.session import Session, parseApiError
-
-logger = logging.getLogger(__name__)
 class Eb2(object):
     """
     Eb2 core class .
@@ -23,7 +21,7 @@ class Eb2(object):
         """
         Initialize main class with this and that.
         """
-        logger.debug('Init Eb2 SDK')
+        logging.info('Init Eb2 SDK')
         s = Session(profile_name)
         host=s.config.get('agapi_host')
         self.host = f'{host}/eb2'
@@ -34,7 +32,7 @@ class Eb2(object):
         """
         Legge un company dal suo id.
         """
-        logger.debug(f'Get company {company_id}')
+        logging.info(f'Get company {company_id}')
         rq = f'{self.host}/company/{company_id}'
         agent=self.s.getAgent()
         r = agent.get(rq, params=params)
@@ -47,7 +45,7 @@ class Eb2(object):
         """
         Prende tutti gli companies.
         """
-        logger.debug('Getting all the companies')
+        logging.info('Getting all the companies')
         rq = f'{self.host}/company'
         agent=self.s.getAgent()
         r = agent.get(rq, params=query)
@@ -60,7 +58,7 @@ class Eb2(object):
         """
         Create new company.
         """
-        logger.debug(f'Creating company {payload}')
+        logging.info(f'Creating company {payload}')
         rq = f'{self.host}/company'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
@@ -68,14 +66,14 @@ class Eb2(object):
             parseApiError(r)
             return False
         company = json.loads(r.text)
-        logger.info('Create company %s' % company['data']['id'])
+        logging.info('Create company %s' % company['data']['id'])
         return company
 
     def getCompanyFromExt_id(self, ext_id:int, params=None):
         """
         Get company from ext_id.
         """
-        logger.debug(f'Search company ext_id {ext_id}.')
+        logging.info(f'Search company ext_id {ext_id}.')
         payload ={
             'ext_id' : ext_id
         }
@@ -94,7 +92,7 @@ class Eb2(object):
         """
         Update company.
         """
-        logger.debug(f'Updating company {company_id} with {payload}')
+        logging.info(f'Updating company {company_id} with {payload}')
         rq = f'{self.host}/company/{company_id}'
         agent=self.s.getAgent()
         r = agent.post(rq, json=payload)
